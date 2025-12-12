@@ -1,0 +1,38 @@
+body {
+	background-color: lightcyan;
+}
+img {
+	
+	border-radius: 20px;
+}
+
+body {
+      margin: 0;
+      padding: 0;
+      background-color: #87CEEB; /* màu nền trang (ví dụ: xanh trời) */
+      display: flex;
+      justify-content: center; /* căn giữa theo chiều ngang */
+      align-items: center;     /* căn giữa theo chiều dọc */
+      height: 100vh;           /* chiếm toàn bộ chiều cao màn hình */
+    }
+    .container {
+      background-color: white; /* khung màu trắng */
+      width: 800px;            /* chiều rộng khung */
+      padding: 20px;           /* khoảng cách bên trong */
+      border-radius: 10px;     /* bo góc */
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2); /* đổ bóng */
+    }
+img {
+    transition: 0.3s;
+  }
+img:hover {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+legend {
+	text-align: center;
+}
+.canle {
+	text-align: left;
+	margin-left: 100px;
+}
