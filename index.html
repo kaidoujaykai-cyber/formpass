@@ -48,7 +48,7 @@
       margin-bottom: 25px;
     }
     input[type="password"] {
-      width: 100%;
+      width: 90%;
       padding: 12px;
       font-size: 16px;
       border: 1px solid #ccc;
@@ -88,21 +88,24 @@
   <div class="container">
     <div class="logo"><span class="c1">1</span><span class="c2">2</span><span class="c3">A</span><span class="c4">1</span></div>
     <h2>Welcome</h2>
-    <p>Enter your password (12a1)</p>
+    <p>Enter your password</p>
 
     <input id="pw" type="password" placeholder="Enter your password" />
 
     <button class="btn" onclick="goNext()">Next</button>
-    <a href="#" class="forgot">Forgot password?</a>
+    <a href="#" class="forgot" onclick="forgotMsg()">Forgot password?</a>
   </div>
   <script>
     function goNext() {
       const pw = document.getElementById('pw').value;
-      if (pw === '12a1') {
+      if (pw === '12a1lasomot') {
         window.location.href = 'trangweb.html';
       } else {
         alert('Sai mật khẩu');
       }
+    }
+      function forgotMsg(){
+      alert('Mật khẩu là 12a1lasomot');
     }
   </script>
 </body>
