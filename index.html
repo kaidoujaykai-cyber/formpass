@@ -27,6 +27,21 @@
         header { text-align: center; margin-bottom: 20px; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         header h1 { margin: 0; font-size: 2.2rem; color: #fff; letter-spacing: 2px; }
         header p { margin: 5px 0 0 0; color: #52799f; font-style: italic; font-size: 0.9rem; }
+        
+        /* Phong cách đồng hồ ở màn hình chính */
+        .realtime-clock-main {
+            margin-top: 8px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #4a6a8a;
+            background: rgba(255, 255, 255, 0.4);
+            padding: 4px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
 
         .form-section, .list-section {
             background: var(--panel-bg); backdrop-filter: blur(10px); padding: 20px;
@@ -193,6 +208,18 @@
             border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
         }
         .cinema-status { font-size: 0.85rem; letter-spacing: 3px; text-transform: uppercase; font-weight: 800; text-shadow: 0 0 10px rgba(255,255,255,0.5); margin-bottom: 12px; }
+        
+        /* Phong cách đồng hồ ở màn hình treo máy */
+        .realtime-clock-cinema {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #00ffff;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            text-shadow: 0 0 8px rgba(0, 255, 255, 0.6);
+            font-family: monospace, sans-serif;
+        }
+
         .cinema-name { font-size: 2.2rem; margin: 8px 0; font-weight: 800; word-wrap: break-word; }
         .cinema-service { font-size: 1.1rem; color: #00ffff; font-weight: bold; background: rgba(255,255,255,0.1); padding: 6px 18px; border-radius: 50px; display: inline-block; margin-bottom: 18px; border: 1px solid rgba(0,213,255,0.3); }
         .cinema-req { font-style: italic; color: #cbd5e1; font-size: 0.9rem; margin-top: 15px; line-height: 1.4; word-break: break-word; }
@@ -260,6 +287,8 @@
     <header>
         <h1>☁️ SKY UBER SERVICES ☁️</h1>
         <p>Hành trình chữa lành và những chuyến bay vạn dặm</p>
+        <!-- Đồng hồ thời gian thực màn hình quản lý chính -->
+        <div class="realtime-clock-main" id="realtimeClockMain">00:00:00</div>
     </header>
 
     <div class="form-section">
@@ -353,6 +382,8 @@
     <div class="cinema-card">
         <button class="btn-close-cinema" onclick="closeCinema()">✕</button>
         <div class="cinema-status" id="cinemaStatusText">⏸️GET READY!</div>
+        <!-- Đồng hồ thời gian thực màn hình treo máy -->
+        <div class="realtime-clock-cinema" id="realtimeClockCinema">00:00:00</div>
         <div class="cinema-name" id="cinemaCustomerName">Tên Khách Hàng</div>
         <div class="cinema-service" id="cinemaServiceName">Tên Dịch Vụ</div>
         
@@ -389,6 +420,21 @@
     const now = new Date();
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
     document.getElementById('startTime').value = now.toISOString().slice(0,16);
+
+    // HÀM UPDATE ĐỒNG HỒ THEO GIỜ THỰC CHẠY LIÊN TỤC
+    function updateRealTimeClocks() {
+        const d = new Date();
+        const hours = d.getHours().toString().padStart(2, '0');
+        const minutes = d.getMinutes().toString().padStart(2, '0');
+        const seconds = d.getSeconds().toString().padStart(2, '0');
+        const timeString = `${hours}:${minutes}:${seconds}`;
+        
+        document.getElementById('realtimeClockMain').innerText = timeString;
+        document.getElementById('realtimeClockCinema').innerText = timeString;
+    }
+    // Khởi chạy đồng hồ real-time ngay khi mở web và cập nhật mỗi giây
+    updateRealTimeClocks();
+    setInterval(updateRealTimeClocks, 1000);
 
     function saveData() {
         localStorage.setItem('skyUberOrders', JSON.stringify(orders));
@@ -451,7 +497,6 @@
         
         const editIndex = document.getElementById('editIndex').value;
         
-        // Thu thập thông tin 4 quests vào mảng đối tượng kèm trạng thái hoàn thành ban đầu
         const questList = [
             { text: document.getElementById('quest1').value.trim(), checked: false },
             { text: document.getElementById('quest2').value.trim(), checked: false },
@@ -471,7 +516,6 @@
         };
 
         if (editIndex !== "") {
-            // Khi chỉnh sửa, giữ lại trạng thái tích chọn nếu nội dung quest không thay đổi
             if(orders[editIndex].quests) {
                 for(let i=0; i<4; i++) {
                     if(orders[editIndex].quests[i] && orders[editIndex].quests[i].text === questList[i].text) {
@@ -504,7 +548,6 @@
         document.getElementById('totalHearts').value = order.totalHearts;
         document.getElementById('requirements').value = order.requirements || '';
 
-        // Đổ dữ liệu quests vào các ô điền
         if (order.quests) {
             document.getElementById('quest1').value = order.quests[0] ? order.quests[0].text : '';
             document.getElementById('quest2').value = order.quests[1] ? order.quests[1].text : '';
@@ -547,7 +590,6 @@
         renderOrders();
     }
 
-    // HÀM HIỂN THỊ VÀ XỬ LÝ CHECKLIST TRÊN MÀN TREO MÁY
     function openCinemaModal(index) {
         const order = orders[index];
         const overlay = document.getElementById('cinemaOverlay');
@@ -581,12 +623,10 @@
         document.getElementById('cinemaCustomerName').innerText = order.customerName;
         document.getElementById('cinemaServiceName').innerText = order.serviceName;
         
-        // Render danh sách Daily Quests trong Màn Treo Máy
         const questsArea = document.getElementById('cinemaQuestsArea');
         const questsListContainer = document.getElementById('cinemaQuestsList');
         questsListContainer.innerHTML = '';
         
-        // Kiểm tra xem đơn hàng có điền quest nào không
         const hasQuests = order.quests && order.quests.some(q => q.text !== '');
         
         if (hasQuests) {
@@ -613,18 +653,15 @@
         overlay.classList.add('active');
     }
 
-    // Xử lý khi người dùng tích chọn / bỏ tích chọn nhiệm vụ ngay trên màn hình treo máy
     function toggleQuest(orderIdx, questIdx, checkboxElem) {
         orders[orderIdx].quests[questIdx].checked = checkboxElem.checked;
         
-        // Tạo hiệu ứng gạch ngang chữ khi làm xong
         const textElem = checkboxElem.nextElementSibling;
         if(checkboxElem.checked) {
             textElem.classList.add('completed');
         } else {
             textElem.classList.remove('completed');
         }
-        // Lưu lại dữ liệu trạng thái checkbox vào LocalStorage
         localStorage.setItem('skyUberOrders', JSON.stringify(orders));
     }
 
