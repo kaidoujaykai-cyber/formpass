@@ -10,6 +10,7 @@
             --panel-bg: rgba(255, 255, 255, 0.75);
             --text-color: #3e5263;
             --accent-color: #6da2db;
+            --edit-color: #f39c12;
         }
 
         * { box-sizing: border-box; }
@@ -21,7 +22,7 @@
             display: flex; flex-direction: column; align-items: center;
         }
 
-        .container { width: 100%; max-width: 1100px; }
+        .container { width: 100%; max-width: 1200px; }
         
         header { text-align: center; margin-bottom: 20px; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         header h1 { margin: 0; font-size: 2.2rem; color: #fff; letter-spacing: 2px; }
@@ -35,7 +36,7 @@
 
         .form-grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
             gap: 15px; 
         }
         @media (max-width: 600px) {
@@ -50,11 +51,35 @@
             background: rgba(255, 255, 255, 0.85); color: var(--text-color); font-size: 0.95rem; outline: none;
         }
 
+        .quests-grid {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.4);
+            padding: 15px;
+            border-radius: 15px;
+            border: 1px dashed rgba(109, 162, 219, 0.5);
+            margin-top: 5px;
+        }
+        .quests-title {
+            grid-column: 1 / -1;
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #34495e;
+            margin-bottom: -5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
         .btn-submit {
             grid-column: 1 / -1; background: #fff; color: var(--accent-color); border: 2px solid var(--accent-color);
             padding: 12px; font-size: 1rem; font-weight: bold; border-radius: 12px; cursor: pointer; transition: all 0.3s; margin-top: 5px;
         }
         .btn-submit:hover { background: var(--accent-color); color: #fff; }
+        .btn-submit.editing-mode { color: var(--edit-color); border-color: var(--edit-color); }
+        .btn-submit.editing-mode:hover { background: var(--edit-color); color: #fff; }
 
         .filter-bar { margin-bottom: 15px; display: flex; gap: 8px; flex-wrap: wrap; }
         .filter-btn {
@@ -69,7 +94,18 @@
         th, td { padding: 12px 14px; border-bottom: 1px solid rgba(0, 0, 0, 0.05); font-size: 0.95rem; }
         th { background-color: rgba(109, 162, 219, 0.15); color: #34495e; font-weight: 600; }
 
-        /* ==================== TỐI ƯU GIAO DIỆN THEO THẺ TRÊN DI ĐỘNG ==================== */
+        .id-badge { 
+            font-size: 0.85rem; 
+            background: rgba(0,0,0,0.06); 
+            padding: 4px 10px; 
+            border-radius: 8px; 
+            color: #5a738e; 
+            display: inline-block; 
+            margin: 2px; 
+            font-family: inherit; 
+            font-weight: 600; 
+        }
+
         @media (max-width: 768px) {
             table, thead, tbody, th, td, tr { display: block; }
             thead { display: none; }
@@ -83,13 +119,11 @@
             }
             td:last-child { border: none; padding-top: 10px; }
             
-            /* Sửa lỗi dính chữ và cho phép tự xuống dòng thoải mái khi viết dài */
             td::before { 
                 content: attr(data-label); font-weight: bold; color: #4a637a; font-size: 0.9rem; 
-                padding-right: 15px; text-align: left; min-width: 100px; flex-shrink: 0;
+                padding-right: 15px; text-align: left; min-width: 110px; flex-shrink: 0;
             }
             
-            /* Class hỗ trợ bọc chữ viết dài không bị tràn */
             .wrap-text {
                 word-break: break-word;
                 overflow-wrap: break-word;
@@ -104,29 +138,55 @@
         .status-running { background-color: #cfe2ff; color: #0a58ca; }
         .status-done { background-color: #d1e7dd; color: #0f5132; }
 
-        .action-group { display: flex; gap: 8px; align-items: center; justify-content: flex-end; width: 100%; }
-        .btn-action { border: none; background: rgba(255,255,255,0.5); cursor: pointer; font-size: 1.1rem; padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; }
+        .action-group { display: flex; gap: 6px; align-items: center; justify-content: flex-end; width: 100%; flex-wrap: wrap; }
+        .btn-action { border: none; background: rgba(255,255,255,0.5); cursor: pointer; font-size: 1.05rem; padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; }
         
-        /* ==================== SCREEN TREO MÁY LED RGB ==================== */
+        /* ==================== SCREEN TREO MÁY CHUẨN LED RGB & CHUYỂN CẢNH MƯỢT MÀ ==================== */
         .cinema-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            display: none; justify-content: center; align-items: center; z-index: 9999;
-            background-size: 400% 400% !important;
-            transition: background 0.5s ease;
+            display: flex; justify-content: center; align-items: center; z-index: 9999;
+            background-size: 400% 400%;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        
+        .cinema-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
         }
 
-        .rgb-mode-pause { background: linear-gradient(-45deg, #0f172a, #1e1b4b, #2e1065, #172554) !important; animation: rgbMovement 15s ease infinite !important; }
-        .rgb-mode-running { background: linear-gradient(-45deg, #ec4899, #8b5cf6, #3b82f6, #f43f5e) !important; animation: rgbMovement 6s linear infinite !important; }
-        .rgb-mode-done { background: linear-gradient(-45deg, #059669, #10b981, #06b6d4, #0284c7) !important; animation: rgbMovement 8s ease infinite !important; }
+        .cinema-overlay.rgb-mode-pause { 
+            background-image: linear-gradient(-45deg, #0f172a, #1e1b4b, #2e1065, #172554); 
+            animation: rgbMovement 12s ease infinite; 
+        }
+        .cinema-overlay.rgb-mode-running { 
+            background-image: linear-gradient(-45deg, #f43f5e, #ec4899, #8b5cf6, #3b82f6); 
+            animation: rgbMovement 6s linear infinite; 
+        }
+        .cinema-overlay.rgb-mode-done { 
+            background-image: linear-gradient(-45deg, #059669, #10b981, #06b6d4, #0284c7); 
+            animation: rgbMovement 8s ease infinite; 
+        }
         
-        @keyframes rgbMovement { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes rgbMovement { 
+            0% { background-position: 0% 50%; } 
+            50% { background-position: 100% 50%; } 
+            100% { background-position: 0% 50%; } 
+        }
 
         .cinema-card {
-            background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(20px);
-            padding: 30px 20px; border-radius: 25px; border: 2px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 0 40px rgba(0,0,0,0.5); width: 92%; max-width: 500px; text-align: center; color: white;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(25px);
+            padding: 30px 20px; border-radius: 25px; border: 2px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.6); width: 92%; max-width: 500px; text-align: center; color: white;
             position: relative;
+            transform: scale(0.85);
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
         }
+        
+        .cinema-overlay.active .cinema-card {
+            transform: scale(1);
+        }
+
         .btn-close-cinema {
             position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.2);
             border: none; color: white; font-size: 1.2rem; width: 35px; height: 35px;
@@ -135,7 +195,49 @@
         .cinema-status { font-size: 0.85rem; letter-spacing: 3px; text-transform: uppercase; font-weight: 800; text-shadow: 0 0 10px rgba(255,255,255,0.5); margin-bottom: 12px; }
         .cinema-name { font-size: 2.2rem; margin: 8px 0; font-weight: 800; word-wrap: break-word; }
         .cinema-service { font-size: 1.1rem; color: #00ffff; font-weight: bold; background: rgba(255,255,255,0.1); padding: 6px 18px; border-radius: 50px; display: inline-block; margin-bottom: 18px; border: 1px solid rgba(0,213,255,0.3); }
-        .cinema-req { font-style: italic; color: #cbd5e1; font-size: 0.9rem; margin-top: 18px; line-height: 1.4; word-break: break-word; }
+        .cinema-req { font-style: italic; color: #cbd5e1; font-size: 0.9rem; margin-top: 15px; line-height: 1.4; word-break: break-word; }
+
+        /* KHIỂN ĐƠN NHIỆM VỤ DAILY TRÊN MÀN HÌNH CINEMA */
+        .cinema-quests-container {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 12px 15px;
+            margin: 15px 0;
+            text-align: left;
+        }
+        .cinema-quests-header {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            color: #00ffff;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .cinema-quest-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 0;
+            font-size: 0.95rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            color: #f1f5f9;
+        }
+        .cinema-quest-item:last-child { border: none; }
+        .cinema-quest-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #00ffff;
+        }
+        .cinema-quest-text.completed {
+            text-decoration: line-through;
+            color: #94a3b8;
+            font-style: italic;
+        }
 
         .progress-container { width: 100%; background: rgba(0, 0, 0, 0.4); height: 26px; border-radius: 13px; margin: 15px auto; overflow: hidden; position: relative; border: 1px solid rgba(255, 255, 255, 0.2); }
         .progress-bar { width: 100%; background: linear-gradient(90deg, #00f2fe, #4facfe); height: 100%; transition: width 1s linear; }
@@ -160,22 +262,27 @@
         <p>Hành trình chữa lành và những chuyến bay vạn dặm</p>
     </header>
 
-    <!-- FORM NHẬP ĐƠN -->
     <div class="form-section">
         <form id="orderForm">
+            <input type="hidden" id="editIndex" value="">
+            
             <div class="form-grid">
                 <div class="form-group">
+                    <label for="orderId">🔑 Mã Đơn</label>
+                    <input type="text" id="orderId" placeholder="Ví dụ: SS001">
+                </div>
+                <div class="form-group">
                     <label for="customerName">👤 Tên Khách Hàng</label>
-                    <input type="text" id="customerName" placeholder="Ví dụ: Bé Moth dễ thương" required>
+                    <input type="text" id="customerName" placeholder="Ví dụ: yw.ld,..." required>
                 </div>
                 <div class="form-group">
                     <label for="serviceName">🕯️ Tên Dịch Vụ</label>
                     <select id="serviceName" required>
                         <option value="Full Vạch + Quests">Full Vạch + Quests</option>
-                        <option value="18 nến + Quests">18 nến + Quests</option>
+                        <option value="Xám nến + Quests">Xám nến + Quests</option>
                         <option value="Nhặt wl">Nhặt wl</option>
                         <option value="Eden Reborn">Eden Reborn</option>
-                        <option value="Log ACC">Log ACC</option>
+                        <option value="18 Nến + Quests">18 Nến + Quests</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -184,18 +291,34 @@
                 </div>
                 <div class="form-group">
                     <label for="totalHearts">💖 Tổng Số Tim</label>
-                    <input type="number" id="totalHearts" min="0" placeholder="Ví dụ: 5" required>
+                    <input type="number" id="totalHearts" min="0" placeholder="Ví dụ: 1" required>
                 </div>
                 <div class="form-group" style="grid-column: span 2;">
                     <label for="requirements">📝 Yêu Cầu Về Đơn</label>
-                    <textarea id="requirements" rows="2" placeholder="Ví dụ: Không nhặt map Forest..."></textarea>
+                    <textarea id="requirements" rows="2" placeholder="Ví dụ: Không nhặt map 5..."></textarea>
                 </div>
-                <button type="submit" class="btn-submit">✨ THÊM CHUYẾN ĐI MỚI ✨</button>
+
+                <div class="quests-grid">
+                    <div class="quests-title">📅 Daily Quests</div>
+                    <div class="form-group">
+                        <input type="text" id="quest1" placeholder="Nhiệm vụ 1...">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="quest2" placeholder="Nhiệm vụ 2...">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="quest3" placeholder="Nhiệm vụ 3...">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="quest4" placeholder="Nhiệm vụ 4...">
+                    </div>
+                </div>
+
+                <button type="submit" id="btnSubmitForm" class="btn-submit">✨ THÊM ĐƠN ✨</button>
             </div>
         </form>
     </div>
 
-    <!-- DANH SÁCH ĐƠN -->
     <div class="list-section">
         <div class="filter-bar">
             <button class="filter-btn active" onclick="filterOrders('all')">Tất Cả</button>
@@ -208,6 +331,8 @@
             <table>
                 <thead>
                     <tr>
+                        <th style="width: 60px; text-align: center;">STT</th>
+                        <th>Mã Đơn</th>
                         <th>Khách Hàng</th>
                         <th>Dịch Vụ</th>
                         <th>Thời Gian</th>
@@ -224,14 +349,18 @@
     </div>
 </div>
 
-<!-- MÀN HÌNH TREO MÁY CHUẨN LED RGB -->
 <div class="cinema-overlay rgb-mode-pause" id="cinemaOverlay">
     <div class="cinema-card">
         <button class="btn-close-cinema" onclick="closeCinema()">✕</button>
-        <div class="cinema-status" id="cinemaStatusText">⏸️ ĐANG TRONG TRẠNG THÁI CHỜ</div>
+        <div class="cinema-status" id="cinemaStatusText">⏸️GET READY!</div>
         <div class="cinema-name" id="cinemaCustomerName">Tên Khách Hàng</div>
         <div class="cinema-service" id="cinemaServiceName">Tên Dịch Vụ</div>
         
+        <div class="cinema-quests-container" id="cinemaQuestsArea" style="display: none;">
+            <div class="cinema-quests-header">🎯 Mức độ hoàn thành Daily Quests</div>
+            <div id="cinemaQuestsList"></div>
+        </div>
+
         <div class="progress-container">
             <div class="progress-bar" id="cinemaProgress"></div>
             <div class="time-display" id="timeDisplay">60:00</div>
@@ -279,6 +408,8 @@
         const filteredOrders = orders.filter(order => currentFilter === 'all' || order.status === currentFilter);
         if (filteredOrders.length === 0) { emptyMsg.style.display = 'block'; return; } else { emptyMsg.style.display = 'none'; }
 
+        let count = 1;
+
         filteredOrders.forEach((order) => {
             const actualIndex = orders.indexOf(order);
             let statusClass = 'status-waiting';
@@ -290,8 +421,12 @@
             if (order.status === 'Đang chạy') statusClass = 'status-running';
             if (order.status === 'Đã xong') statusClass = 'status-done';
 
+            const blockCode = order.orderId ? `<div class="id-badge">Đơn: ${order.orderId}</div>` : '';
+
             const tr = document.createElement('tr');
             tr.innerHTML = `
+                <td data-label="STT" style="text-align: center; font-weight: bold; color: #7f8c8d;">${count++}</td>
+                <td data-label="Mã Đơn">${blockCode || '<span style="color:#aaa;">-</span>'}</td>
                 <td data-label="Khách Hàng" style="font-weight:600;"><span class="wrap-text">${order.customerName}</span></td>
                 <td data-label="Dịch Vụ"><span class="wrap-text">${order.serviceName}</span></td>
                 <td data-label="Thời Gian" style="font-size:0.85rem;">${formatDateTime(order.startTime)}</td>
@@ -301,6 +436,7 @@
                 <td data-label="Hành Động">
                     <div class="action-group">
                         ${cinemaBtn}
+                        <button class="btn-action" onclick="editOrder(${actualIndex})" title="Chỉnh sửa đơn">📝</button>
                         <button class="btn-action" onclick="changeStatus(${actualIndex})" title="Đổi trạng thái">🔄</button>
                         <button class="btn-action" onclick="deleteOrder(${actualIndex})" title="Xóa">❌</button>
                     </div>
@@ -312,18 +448,81 @@
 
     document.getElementById('orderForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        orders.push({
+        
+        const editIndex = document.getElementById('editIndex').value;
+        
+        // Thu thập thông tin 4 quests vào mảng đối tượng kèm trạng thái hoàn thành ban đầu
+        const questList = [
+            { text: document.getElementById('quest1').value.trim(), checked: false },
+            { text: document.getElementById('quest2').value.trim(), checked: false },
+            { text: document.getElementById('quest3').value.trim(), checked: false },
+            { text: document.getElementById('quest4').value.trim(), checked: false }
+        ];
+
+        const orderData = {
+            orderId: document.getElementById('orderId').value.trim(),
             customerName: document.getElementById('customerName').value,
             serviceName: document.getElementById('serviceName').value,
             startTime: document.getElementById('startTime').value,
             totalHearts: document.getElementById('totalHearts').value,
             requirements: document.getElementById('requirements').value,
-            status: 'Đang đợi'
-        });
+            quests: questList,
+            status: editIndex !== "" ? orders[editIndex].status : 'Đang đợi'
+        };
+
+        if (editIndex !== "") {
+            // Khi chỉnh sửa, giữ lại trạng thái tích chọn nếu nội dung quest không thay đổi
+            if(orders[editIndex].quests) {
+                for(let i=0; i<4; i++) {
+                    if(orders[editIndex].quests[i] && orders[editIndex].quests[i].text === questList[i].text) {
+                        orderData.quests[i].checked = orders[editIndex].quests[i].checked;
+                    }
+                }
+            }
+            orders[editIndex] = orderData;
+            document.getElementById('editIndex').value = "";
+            const submitBtn = document.getElementById('btnSubmitForm');
+            submitBtn.innerText = "✨ THÊM ĐƠN ✨";
+            submitBtn.classList.remove('editing-mode');
+        } else {
+            orders.push(orderData);
+        }
+
         saveData();
         this.reset();
         document.getElementById('startTime').value = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16);
     });
+
+    function editOrder(index) {
+        const order = orders[index];
+        document.getElementById('editIndex').value = index;
+        
+        document.getElementById('orderId').value = order.orderId || '';
+        document.getElementById('customerName').value = order.customerName;
+        document.getElementById('serviceName').value = order.serviceName;
+        document.getElementById('startTime').value = order.startTime;
+        document.getElementById('totalHearts').value = order.totalHearts;
+        document.getElementById('requirements').value = order.requirements || '';
+
+        // Đổ dữ liệu quests vào các ô điền
+        if (order.quests) {
+            document.getElementById('quest1').value = order.quests[0] ? order.quests[0].text : '';
+            document.getElementById('quest2').value = order.quests[1] ? order.quests[1].text : '';
+            document.getElementById('quest3').value = order.quests[2] ? order.quests[2].text : '';
+            document.getElementById('quest4').value = order.quests[3] ? order.quests[3].text : '';
+        } else {
+            document.getElementById('quest1').value = '';
+            document.getElementById('quest2').value = '';
+            document.getElementById('quest3').value = '';
+            document.getElementById('quest4').value = '';
+        }
+
+        const submitBtn = document.getElementById('btnSubmitForm');
+        submitBtn.innerText = "💾 CẬP NHẬT ĐƠN 💾";
+        submitBtn.classList.add('editing-mode');
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
     function changeStatus(index) {
         const current = orders[index].status;
@@ -334,7 +533,7 @@
     }
 
     function deleteOrder(index) {
-        if(confirm("Xóa đơn này à?")) { 
+        if(confirm("Xóa chuyến xe này chứ?")) { 
             orders.splice(index, 1); 
             if(activeOrderIndex === index) { closeCinema(); }
             saveData(); 
@@ -348,8 +547,10 @@
         renderOrders();
     }
 
+    // HÀM HIỂN THỊ VÀ XỬ LÝ CHECKLIST TRÊN MÀN TREO MÁY
     function openCinemaModal(index) {
         const order = orders[index];
+        const overlay = document.getElementById('cinemaOverlay');
         
         if (activeOrderIndex !== index || order.status !== 'Đã xong') {
             clearInterval(countdownInterval);
@@ -361,8 +562,8 @@
                 document.getElementById('btnStart').disabled = true;
                 document.getElementById('btnStop').disabled = true;
                 document.getElementById('btnFinish').disabled = true;
-                document.getElementById('cinemaOverlay').className = 'cinema-overlay rgb-mode-done';
-                document.getElementById('cinemaStatusText').innerText = '🎉 CHUYẾN ĐI ĐƠN ĐÃ DONE! 🎉';
+                overlay.className = 'cinema-overlay rgb-mode-done';
+                document.getElementById('cinemaStatusText').innerText = '🎉 ĐƠN ĐÃ HOÀN THÀNH 🎉';
                 document.getElementById('timeDisplay').innerText = '00:00';
                 document.getElementById('cinemaProgress').style.width = '0%';
             } else {
@@ -370,8 +571,8 @@
                 document.getElementById('btnStart').disabled = false;
                 document.getElementById('btnStop').disabled = true;
                 document.getElementById('btnFinish').disabled = false;
-                document.getElementById('cinemaOverlay').className = 'cinema-overlay rgb-mode-pause';
-                document.getElementById('cinemaStatusText').innerText = '⏸️ GET READY RIGHT NOW!';
+                overlay.className = 'cinema-overlay rgb-mode-pause';
+                document.getElementById('cinemaStatusText').innerText = '⏸️ STOPPING!';
                 document.getElementById('timeDisplay').innerText = '60:00';
                 document.getElementById('cinemaProgress').style.width = '100%';
             }
@@ -379,20 +580,63 @@
 
         document.getElementById('cinemaCustomerName').innerText = order.customerName;
         document.getElementById('cinemaServiceName').innerText = order.serviceName;
-        document.getElementById('cinemaRequirements').innerText = order.requirements ? `“ Yêu cầu: ${order.requirements} ”` : "“ Không có yêu cầu đặc biệt ”";
         
-        document.getElementById('cinemaOverlay').style.display = 'flex';
+        // Render danh sách Daily Quests trong Màn Treo Máy
+        const questsArea = document.getElementById('cinemaQuestsArea');
+        const questsListContainer = document.getElementById('cinemaQuestsList');
+        questsListContainer.innerHTML = '';
+        
+        // Kiểm tra xem đơn hàng có điền quest nào không
+        const hasQuests = order.quests && order.quests.some(q => q.text !== '');
+        
+        if (hasQuests) {
+            questsArea.style.display = 'block';
+            order.quests.forEach((q, i) => {
+                if (q.text !== '') {
+                    const item = document.createElement('div');
+                    item.className = 'cinema-quest-item';
+                    item.innerHTML = `
+                        <input type="checkbox" class="cinema-quest-checkbox" ${q.checked ? 'checked' : ''} onchange="toggleQuest(${index}, ${i}, this)">
+                        <span class="cinema-quest-text ${q.checked ? 'completed' : ''}">${q.text}</span>
+                    `;
+                    questsListContainer.appendChild(item);
+                }
+            });
+        } else {
+            questsArea.style.display = 'none';
+        }
+        
+        let reqText = order.requirements ? `“ Yêu cầu: ${order.requirements} ”` : "“ Không có yêu cầu đặc biệt ”";
+        if (order.orderId) reqText = `Mã đơn: ${order.orderId} | ` + reqText;
+        document.getElementById('cinemaRequirements').innerText = reqText;
+        
+        overlay.classList.add('active');
+    }
+
+    // Xử lý khi người dùng tích chọn / bỏ tích chọn nhiệm vụ ngay trên màn hình treo máy
+    function toggleQuest(orderIdx, questIdx, checkboxElem) {
+        orders[orderIdx].quests[questIdx].checked = checkboxElem.checked;
+        
+        // Tạo hiệu ứng gạch ngang chữ khi làm xong
+        const textElem = checkboxElem.nextElementSibling;
+        if(checkboxElem.checked) {
+            textElem.classList.add('completed');
+        } else {
+            textElem.classList.remove('completed');
+        }
+        // Lưu lại dữ liệu trạng thái checkbox vào LocalStorage
+        localStorage.setItem('skyUberOrders', JSON.stringify(orders));
     }
 
     function closeCinema() {
-        document.getElementById('cinemaOverlay').style.display = 'none';
+        document.getElementById('cinemaOverlay').classList.remove('active');
     }
 
     function startTimer() {
         if (timerRunning) return;
         timerRunning = true;
-        document.getElementById('cinemaOverlay').className = 'cinema-overlay rgb-mode-running';
-        document.getElementById('cinemaStatusText').innerText = '🚀 GET GOOOO 🚀';
+        document.getElementById('cinemaOverlay').className = 'cinema-overlay rgb-mode-running active';
+        document.getElementById('cinemaStatusText').innerText = '🚀 GÉT GOOOO 🚀';
         document.getElementById('btnStart').disabled = true;
         document.getElementById('btnStop').disabled = false;
 
@@ -407,8 +651,8 @@
             if (remainingSeconds <= 0) {
                 clearInterval(countdownInterval);
                 timerRunning = false;
-                document.getElementById('cinemaOverlay').className = 'cinema-overlay rgb-mode-done';
-                document.getElementById('cinemaStatusText').innerText = '🎉 CHUYẾN ĐI ĐƠN ĐÃ DONE! 🎉';
+                document.getElementById('cinemaOverlay').className = 'cinema-overlay rgb-mode-done active';
+                document.getElementById('cinemaStatusText').innerText = '🎉 ĐƠN ĐÃ HOÀN THÀNH 🎉';
                 document.getElementById('btnStop').disabled = true;
                 document.getElementById('btnFinish').disabled = true;
                 
@@ -424,8 +668,8 @@
         if (!timerRunning) return;
         timerRunning = false;
         clearInterval(countdownInterval);
-        document.getElementById('cinemaOverlay').className = 'cinema-overlay rgb-mode-pause';
-        document.getElementById('cinemaStatusText').innerText = '⏸️ STOP!';
+        document.getElementById('cinemaOverlay').className = 'cinema-overlay rgb-mode-pause active';
+        document.getElementById('cinemaStatusText').innerText = '⏸️ STOPPING';
         document.getElementById('btnStart').disabled = false;
         document.getElementById('btnStop').disabled = true;
     }
@@ -435,8 +679,8 @@
         timerRunning = false;
         remainingSeconds = 0;
         
-        document.getElementById('cinemaOverlay').className = 'cinema-overlay rgb-mode-done';
-        document.getElementById('cinemaStatusText').innerText = '🎉 CHUYẾN ĐI ĐƠN ĐÃ DONE! 🎉';
+        document.getElementById('cinemaOverlay').className = 'cinema-overlay rgb-mode-done active';
+        document.getElementById('cinemaStatusText').innerText = '🎉 ĐƠN ĐÃ HOÀN THÀNH 🎉';
         
         document.getElementById('timeDisplay').innerText = '00:00';
         document.getElementById('cinemaProgress').style.width = '0%';
