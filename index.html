@@ -33,7 +33,6 @@
             margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.5);
         }
 
-        /* Tối ưu hóa Grid tránh tràn viền trên điện thoại */
         .form-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
@@ -69,16 +68,14 @@
         }
         .filter-btn.active, .filter-btn:hover { background: var(--accent-color); color: #fff; border-color: var(--accent-color); }
 
-        /* Tối ưu hóa bảng hiển thị trên cả PC lẫn di động */
         .table-container { width: 100%; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; text-align: left; }
         th, td { padding: 12px 14px; border-bottom: 1px solid rgba(0, 0, 0, 0.05); font-size: 0.95rem; }
         th { background-color: rgba(109, 162, 219, 0.15); color: #34495e; font-weight: 600; }
 
-        /* Biến bảng thành dạng thẻ danh bạ tiện lợi trên điện thoại */
         @media (max-width: 768px) {
             table, thead, tbody, th, td, tr { display: block; }
-            thead { display: none; } /* Ẩn tiêu đề bảng cũ */
+            thead { display: none; }
             tr { 
                 background: rgba(255, 255, 255, 0.4); border: 1px solid rgba(255,255,255,0.5);
                 border-radius: 15px; padding: 12px; margin-bottom: 12px; 
@@ -88,7 +85,6 @@
                 border-bottom: 1px dashed rgba(0,0,0,0.05);
             }
             td:last-child { border: none; padding-top: 10px; }
-            /* Tự tạo nhãn tiêu đề trước dữ liệu */
             td::before { content: attr(data-label); font-weight: bold; color: #4a637a; font-size: 0.9rem; }
         }
 
@@ -97,12 +93,11 @@
         .status-running { background-color: #cfe2ff; color: #0a58ca; }
         .status-done { background-color: #d1e7dd; color: #0f5132; }
 
-        /* Giữ các nút hành động thẳng hàng ngang */
         .action-group { display: flex; gap: 8px; align-items: center; }
         .btn-action { border: none; background: rgba(255,255,255,0.5); cursor: pointer; font-size: 1.1rem; padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; transition: transform 0.1s; }
         .btn-action:active { transform: scale(0.9); }
         
-        /* ==================== MÀN HÌNH TREO MÁY CHUNG MỘT FILE ==================== */
+        /* ==================== SCREEN TREO MÁY ==================== */
         .cinema-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             display: none; justify-content: center; align-items: center; z-index: 9999;
@@ -138,10 +133,11 @@
         .btn-ctrl { border: none; padding: 10px 18px; font-size: 0.85rem; font-weight: bold; border-radius: 10px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
         
         .btn-start { background-color: #10b981; color: white; }
-        .btn-start:disabled { background-color: #475569; color: #94a3b8; opacity: 0.4; }
+        .btn-start:disabled { background-color: #475569; color: #cbd5e1; opacity: 0.2; cursor: not-allowed; }
         .btn-stop { background-color: #f59e0b; color: white; }
-        .btn-stop:disabled { background-color: #475569; color: #94a3b8; opacity: 0.4; }
+        .btn-stop:disabled { background-color: #475569; color: #cbd5e1; opacity: 0.2; cursor: not-allowed; }
         .btn-finish { background: linear-gradient(90deg, #00f2fe 0%, #4facfe 100%); color: white; }
+        .btn-finish:disabled { background: #475569; color: #cbd5e1; opacity: 0.2; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -275,10 +271,10 @@
             let statusClass = 'status-waiting';
             let cinemaBtn = '';
 
-            if (order.status === 'Đang chạy') {
-                statusClass = 'status-running';
+            if (order.status === 'Đang chạy' || order.status === 'Đã xong') {
                 cinemaBtn = `<button class="btn-action" onclick="openCinemaModal(${actualIndex})" title="Mở màn hình treo máy">📺</button>`;
             }
+            if (order.status === 'Đang chạy') statusClass = 'status-running';
             if (order.status === 'Đã xong') statusClass = 'status-done';
 
             const tr = document.createElement('tr');
@@ -339,23 +335,39 @@
         renderOrders();
     }
 
+    // ==================== TỰ ĐỘNG RESET KHI CHUYỂN ĐƠN MỚI ====================
     function openCinemaModal(index) {
-        if (activeOrderIndex !== index) {
+        const order = orders[index];
+        
+        // ⚡ NÂNG CẤP QUAN TRỌNG: Nếu đổi sang một đơn hàng khác HOẶC đơn hàng đó ở trạng thái chưa hoàn thành
+        if (activeOrderIndex !== index || order.status !== 'Đã xong') {
             clearInterval(countdownInterval);
-            remainingSeconds = totalSeconds;
             timerRunning = false;
             activeOrderIndex = index;
             
-            document.getElementById('btnStart').disabled = false;
-            document.getElementById('btnStop').disabled = true;
-            document.getElementById('btnFinish').disabled = false;
-            document.getElementById('cinemaOverlay').className = 'cinema-overlay rgb-mode-pause';
-            document.getElementById('cinemaStatusText').innerText = '⏸️ ĐANG TRONG TRẠNG THÁI CHỜ';
-            document.getElementById('timeDisplay').innerText = '60:00';
-            document.getElementById('cinemaProgress').style.width = '100%';
+            if (order.status === 'Đã xong') {
+                // Nếu đơn này vốn đã xong từ trước, hiển thị màn hình chúc mừng kết thúc
+                remainingSeconds = 0;
+                document.getElementById('btnStart').disabled = true;
+                document.getElementById('btnStop').disabled = true;
+                document.getElementById('btnFinish').disabled = true;
+                document.getElementById('cinemaOverlay').className = 'cinema-overlay rgb-mode-done';
+                document.getElementById('cinemaStatusText').innerText = '🎉 CHUYẾN ĐI ĐÃ HOÀN THÀNH XUẤT SẮC 🎉';
+                document.getElementById('timeDisplay').innerText = '00:00';
+                document.getElementById('cinemaProgress').style.width = '0%';
+            } else {
+                // TỰ ĐỘNG RESET HOÀN TOÀN: Đơn mới hoặc đơn đang chạy lại, tự động đưa thời gian về 60:00 và mở khóa các nút
+                remainingSeconds = totalSeconds;
+                document.getElementById('btnStart').disabled = false;
+                document.getElementById('btnStop').disabled = true;
+                document.getElementById('btnFinish').disabled = false;
+                document.getElementById('cinemaOverlay').className = 'cinema-overlay rgb-mode-pause';
+                document.getElementById('cinemaStatusText').innerText = '⏸️ ĐANG TRONG TRẠNG THÁI CHỜ';
+                document.getElementById('timeDisplay').innerText = '60:00';
+                document.getElementById('cinemaProgress').style.width = '100%';
+            }
         }
 
-        const order = orders[index];
         document.getElementById('cinemaCustomerName').innerText = order.customerName;
         document.getElementById('cinemaServiceName').innerText = order.serviceName;
         document.getElementById('cinemaRequirements').innerText = order.requirements ? `“ Yêu cầu: ${order.requirements} ”` : "“ Không có yêu cầu đặc biệt ”";
