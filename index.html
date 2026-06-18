@@ -438,7 +438,7 @@
             if (order.status === 'Đang chạy') statusClass = 'status-running';
             if (order.status === 'Đã xong') statusClass = 'status-done';
 
-            const blockCode = order.orderId ? `<div class="id-badge">Đơn: ${order.orderId}</div>` : '';
+            const blockCode = order.orderId ? `<div class="id-badge">${order.orderId}</div>` : '';
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
