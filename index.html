@@ -69,6 +69,7 @@
         th, td { padding: 12px 14px; border-bottom: 1px solid rgba(0, 0, 0, 0.05); font-size: 0.95rem; }
         th { background-color: rgba(109, 162, 219, 0.15); color: #34495e; font-weight: 600; }
 
+        /* ==================== TỐI ƯU GIAO DIỆN THEO THẺ TRÊN DI ĐỘNG ==================== */
         @media (max-width: 768px) {
             table, thead, tbody, th, td, tr { display: block; }
             thead { display: none; }
@@ -77,11 +78,25 @@
                 border-radius: 15px; padding: 12px; margin-bottom: 12px; 
             }
             td { 
-                border: none; padding: 5px 0; display: flex; justify-content: space-between; align-items: center; 
-                border-bottom: 1px dashed rgba(0,0,0,0.05);
+                border: none; padding: 8px 0; display: flex; justify-content: space-between; align-items: flex-start; 
+                border-bottom: 1px dashed rgba(0,0,0,0.05); text-align: right;
             }
             td:last-child { border: none; padding-top: 10px; }
-            td::before { content: attr(data-label); font-weight: bold; color: #4a637a; font-size: 0.9rem; }
+            
+            /* Sửa lỗi dính chữ và cho phép tự xuống dòng thoải mái khi viết dài */
+            td::before { 
+                content: attr(data-label); font-weight: bold; color: #4a637a; font-size: 0.9rem; 
+                padding-right: 15px; text-align: left; min-width: 100px; flex-shrink: 0;
+            }
+            
+            /* Class hỗ trợ bọc chữ viết dài không bị tràn */
+            .wrap-text {
+                word-break: break-word;
+                overflow-wrap: break-word;
+                white-space: normal;
+                text-align: right;
+                width: 100%;
+            }
         }
 
         .status-badge { padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; white-space: nowrap; display: inline-block; }
@@ -89,37 +104,22 @@
         .status-running { background-color: #cfe2ff; color: #0a58ca; }
         .status-done { background-color: #d1e7dd; color: #0f5132; }
 
-        .action-group { display: flex; gap: 8px; align-items: center; }
+        .action-group { display: flex; gap: 8px; align-items: center; justify-content: flex-end; width: 100%; }
         .btn-action { border: none; background: rgba(255,255,255,0.5); cursor: pointer; font-size: 1.1rem; padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; }
         
-        /* ==================== SỬA LỖI NỀN LED RGB HOẠT ĐỘNG HOÀN HẢO ==================== */
+        /* ==================== SCREEN TREO MÁY LED RGB ==================== */
         .cinema-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             display: none; justify-content: center; align-items: center; z-index: 9999;
-            background-size: 400% 400% !important; /* Đảm bảo dải nền co giãn để hiệu ứng chạy mượt */
+            background-size: 400% 400% !important;
             transition: background 0.5s ease;
         }
 
-        /* Đồng bộ chuẩn xác 3 hiệu ứng LED động như lúc đầu */
-        .rgb-mode-pause { 
-            background: linear-gradient(-45deg, #0f172a, #1e1b4b, #2e1065, #172554) !important; 
-            animation: rgbMovement 15s ease infinite !important; 
-        }
-        .rgb-mode-running { 
-            background: linear-gradient(-45deg, #ec4899, #8b5cf6, #3b82f6, #f43f5e) !important; 
-            animation: rgbMovement 6s linear infinite !important; 
-        }
-        .rgb-mode-done { 
-            background: linear-gradient(-45deg, #059669, #10b981, #06b6d4, #0284c7) !important; 
-            animation: rgbMovement 8s ease infinite !important; 
-        }
+        .rgb-mode-pause { background: linear-gradient(-45deg, #0f172a, #1e1b4b, #2e1065, #172554) !important; animation: rgbMovement 15s ease infinite !important; }
+        .rgb-mode-running { background: linear-gradient(-45deg, #ec4899, #8b5cf6, #3b82f6, #f43f5e) !important; animation: rgbMovement 6s linear infinite !important; }
+        .rgb-mode-done { background: linear-gradient(-45deg, #059669, #10b981, #06b6d4, #0284c7) !important; animation: rgbMovement 8s ease infinite !important; }
         
-        /* Keyframes di chuyển dải màu mượt mà */
-        @keyframes rgbMovement { 
-            0% { background-position: 0% 50%; } 
-            50% { background-position: 100% 50%; } 
-            100% { background-position: 0% 50%; } 
-        }
+        @keyframes rgbMovement { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
         .cinema-card {
             background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(20px);
@@ -135,7 +135,7 @@
         .cinema-status { font-size: 0.85rem; letter-spacing: 3px; text-transform: uppercase; font-weight: 800; text-shadow: 0 0 10px rgba(255,255,255,0.5); margin-bottom: 12px; }
         .cinema-name { font-size: 2.2rem; margin: 8px 0; font-weight: 800; word-wrap: break-word; }
         .cinema-service { font-size: 1.1rem; color: #00ffff; font-weight: bold; background: rgba(255,255,255,0.1); padding: 6px 18px; border-radius: 50px; display: inline-block; margin-bottom: 18px; border: 1px solid rgba(0,213,255,0.3); }
-        .cinema-req { font-style: italic; color: #cbd5e1; font-size: 0.9rem; margin-top: 18px; line-height: 1.4; }
+        .cinema-req { font-style: italic; color: #cbd5e1; font-size: 0.9rem; margin-top: 18px; line-height: 1.4; word-break: break-word; }
 
         .progress-container { width: 100%; background: rgba(0, 0, 0, 0.4); height: 26px; border-radius: 13px; margin: 15px auto; overflow: hidden; position: relative; border: 1px solid rgba(255, 255, 255, 0.2); }
         .progress-bar { width: 100%; background: linear-gradient(90deg, #00f2fe, #4facfe); height: 100%; transition: width 1s linear; }
@@ -160,6 +160,7 @@
         <p>Hành trình chữa lành và những chuyến bay vạn dặm</p>
     </header>
 
+    <!-- FORM NHẬP ĐƠN -->
     <div class="form-section">
         <form id="orderForm">
             <div class="form-grid">
@@ -193,6 +194,7 @@
         </form>
     </div>
 
+    <!-- DANH SÁCH ĐƠN -->
     <div class="list-section">
         <div class="filter-bar">
             <button class="filter-btn active" onclick="filterOrders('all')">Tất Cả</button>
@@ -221,6 +223,7 @@
     </div>
 </div>
 
+<!-- MÀN HÌNH TREO MÁY CHUẨN LED RGB -->
 <div class="cinema-overlay rgb-mode-pause" id="cinemaOverlay">
     <div class="cinema-card">
         <button class="btn-close-cinema" onclick="closeCinema()">✕</button>
@@ -288,10 +291,10 @@
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td data-label="Khách Hàng" style="font-weight:600;">${order.customerName}</td>
-                <td data-label="Dịch Vụ">${order.serviceName}</td>
+                <td data-label="Khách Hàng" style="font-weight:600;"><span class="wrap-text">${order.customerName}</span></td>
+                <td data-label="Dịch Vụ"><span class="wrap-text">${order.serviceName}</span></td>
                 <td data-label="Thời Gian" style="font-size:0.85rem;">${formatDateTime(order.startTime)}</td>
-                <td data-label="Yêu Cầu" style="font-size:0.85rem; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${order.requirements || '-'}</td>
+                <td data-label="Yêu Cầu" style="font-size:0.85rem;"><span class="wrap-text">${order.requirements || 'Không có yêu cầu'}</span></td>
                 <td data-label="Giá (💖)" style="font-weight:bold; color:#e056fd;">${order.totalHearts} 💖</td>
                 <td data-label="Trạng Thái"><span class="status-badge ${statusClass}">${order.status}</span></td>
                 <td data-label="Hành Động">
