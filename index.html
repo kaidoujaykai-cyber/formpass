@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sky: Children of the Light - Uber Manager</title>
     <style>
+        /* Định nghĩa biến màu cho giao diện */
         :root {
             --sky-bg: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
             --panel-bg: rgba(255, 255, 255, 0.65);
@@ -15,6 +16,7 @@
             --border-color: rgba(255, 255, 255, 0.6);
         }
 
+        /* Màu sắc cho chế độ Tối (Dark Mode) */
         [data-theme="dark"] {
             --sky-bg: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             --panel-bg: rgba(30, 41, 59, 0.7);
@@ -41,6 +43,7 @@
         [data-theme="dark"] header h1 { color: var(--accent-color); }
         [data-theme="dark"] header p { color: #94a3b8; }
 
+        /* Nút chuyển giao diện Sáng/Tối góc màn hình */
         .theme-toggle-btn {
             position: absolute; top: 0; right: 0; background: var(--panel-bg);
             border: 1px solid var(--border-color); color: var(--text-color);
@@ -167,6 +170,7 @@
     let orders = JSON.parse(localStorage.getItem('skyUberOrders')) || [];
     let currentFilter = 'all';
 
+    // Xử lý lưu và cài đặt theme Light/Dark
     let currentTheme = localStorage.getItem('skyUberTheme') || 'light';
     document.documentElement.setAttribute('data-theme', currentTheme);
     updateThemeButtonText();
@@ -184,7 +188,11 @@
 
     function updateThemeButtonText() {
         const btn = document.getElementById('themeToggle');
-        btn.innerHTML = currentTheme === 'dark' ? '☀️ Chế độ sáng' : '🌙 Chế độ tối';
+        if (currentTheme === 'dark') {
+            btn.innerHTML = '☀️ Chế độ sáng';
+        } else {
+            btn.innerHTML = '🌙 Chế độ tối';
+        }
     }
 
     function saveData() {
@@ -192,13 +200,19 @@
         renderOrders();
     }
 
-    // Đồng bộ thời gian thực từ LocalStorage khi tab Cinema thay đổi dữ liệu
     window.addEventListener('storage', function(e) {
         if (e.key === 'skyUberOrders') {
             orders = JSON.parse(e.newValue) || [];
             renderOrders();
         }
     });
+
+    window.updateOrderStatusFromCinema = function(index, newStatus) {
+        if(orders[index]) {
+            orders[index].status = newStatus;
+            saveData();
+        }
+    }
 
     function formatDateTime(dateTimeStr) {
         const d = new Date(dateTimeStr);
@@ -276,47 +290,89 @@
         renderOrders();
     }
 
-    // ⚡ GIẢI PHÁP ĐỘC QUYỀN: Mã hóa HTML sang DataURL sửa triệt để lỗi đơ nút bấm trên các trình duyệt
     function openCinemaInNewTab(index) {
         const order = orders[index];
         const reqText = order.requirements ? `“ Yêu cầu: ${order.requirements} ”` : "“ Không có yêu cầu đặc biệt ”";
         
-        const cinemaHtml = `<!DOCTYPE html>
+        const newTab = window.open("", "_blank");
+        
+        const cinemaHtml = `
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <title>Sky Uber - ${order.customerName} Hanging Mode</title>
     <style>
-        :root { --card-bg: rgba(0, 0, 0, 0.4); --card-border: rgba(255, 255, 255, 0.1); --text-main: #fff; --text-sub: #cbd5e1; }
-        [data-theme="light"] { --card-bg: rgba(255, 255, 255, 0.75); --card-border: rgba(0, 0, 0, 0.1); --text-main: #1e293b; --text-sub: #475569; }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; display: flex; justify-content: center; align-items: center; color: var(--text-main); font-family: 'Segoe UI', sans-serif; background-size: 400% 400% !important; transition: all 0.5s ease; }
+        :root {
+            --card-bg: rgba(0, 0, 0, 0.4);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-main: #fff;
+            --text-sub: #cbd5e1;
+        }
+
+        /* Tùy biến màu thẻ Cinema khi ở chế độ sáng */
+        [data-theme="light"] {
+            --card-bg: rgba(255, 255, 255, 0.75);
+            --card-border: rgba(0, 0, 0, 0.1);
+            --text-main: #1e293b;
+            --text-sub: #475569;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; display: flex; justify-content: center;
+            align-items: center; color: var(--text-main); font-family: 'Segoe UI', sans-serif;
+            background-size: 400% 400% !important; transition: all 0.5s ease;
+        }
+
+        /* Các dải màu LED RGB chế độ ĐÊM */
         .rgb-mode-pause { background: linear-gradient(-45deg, #0f172a, #1e1b4b, #2e1065, #172554); animation: rgbPause 15s ease infinite; }
         .rgb-mode-running { background: linear-gradient(-45deg, #ec4899, #8b5cf6, #3b82f6, #f43f5e); animation: rgbRunning 6s linear infinite; }
         .rgb-mode-done { background: linear-gradient(-45deg, #059669, #10b981, #06b6d4, #0284c7); animation: rgbPause 8s ease infinite; }
+
+        /* Các dải màu LED nhạt chế độ SÁNG (Dễ nhìn ban ngày) */
         [data-theme="light"].rgb-mode-pause { background: linear-gradient(-45deg, #f1f5f9, #e2e8f0, #cbd5e1); animation: rgbPause 15s ease infinite; }
         [data-theme="light"].rgb-mode-running { background: linear-gradient(-45deg, #fed7aa, #fbcfe8, #bfdbfe, #bbf7d0); animation: rgbRunning 8s linear infinite; }
         [data-theme="light"].rgb-mode-done { background: linear-gradient(-45deg, #ccfbf1, #99f6e4, #e0f2fe); animation: rgbPause 8s ease infinite; }
+
         @keyframes rgbPause { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes rgbRunning { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        .cinema-card { background: var(--card-bg); backdrop-filter: blur(20px); padding: 40px 60px; border-radius: 30px; border: 2px solid var(--card-border); box-shadow: 0 10px 40px rgba(0,0,0,0.15); max-width: 80%; width: 650px; text-align: center; transition: all 0.3s; position: relative; }
-        .theme-btn-cinema { position: absolute; top: 20px; right: 20px; background: rgba(128,128,128,0.15); border: 1px solid var(--card-border); color: var(--text-main); padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 0.8rem; font-weight: bold; }
+
+        .cinema-card {
+            background: var(--card-bg); backdrop-filter: blur(20px);
+            padding: 40px 60px; border-radius: 30px; border: 2px solid var(--card-border);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15); max-width: 80%; width: 650px; text-align: center;
+            transition: all 0.3s; position: relative;
+        }
+
+        .theme-btn-cinema {
+            position: absolute; top: 20px; right: 20px; background: rgba(128,128,128,0.15);
+            border: 1px solid var(--card-border); color: var(--text-main); padding: 6px 12px;
+            border-radius: 20px; cursor: pointer; font-size: 0.8rem; font-weight: bold;
+        }
+
         .cinema-status { font-size: 1.1rem; letter-spacing: 6px; text-transform: uppercase; font-weight: 800; margin-bottom: 15px; }
         .cinema-name { font-size: 3.5rem; margin: 10px 0; font-weight: 800; }
         .cinema-service { font-size: 1.4rem; color: #00b4d8; font-weight: bold; background: rgba(0,180,216,0.1); padding: 6px 22px; border-radius: 50px; display: inline-block; margin-bottom: 25px; border: 1px solid rgba(0,180,216,0.2); }
         [data-theme="dark"] .cinema-service { color: #00ffff; background: rgba(255,255,255,0.1); border-color: rgba(0,213,255,0.3); }
         .cinema-req { font-style: italic; color: var(--text-sub); font-size: 1.1rem; margin-top: 25px; line-height: 1.5; }
+
         .progress-container { width: 100%; background: rgba(0, 0, 0, 0.15); height: 26px; border-radius: 13px; margin: 20px auto; overflow: hidden; position: relative; border: 1px solid var(--card-border); }
         [data-theme="dark"] .progress-container { background: rgba(0, 0, 0, 0.4); }
         .progress-bar { width: 100%; background: linear-gradient(90deg, #00f2fe, #4facfe); height: 100%; transition: width 1s linear; }
         .time-display { position: absolute; width: 100%; top: 0; left: 0; line-height: 26px; font-size: 1.1rem; font-weight: bold; text-align: center; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.6); }
+
         .control-btns { display: flex; justify-content: center; gap: 15px; margin-top: 25px; flex-wrap: wrap; }
         .btn-ctrl { border: none; padding: 12px 25px; font-size: 1rem; font-weight: bold; border-radius: 10px; cursor: pointer; transition: all 0.2s ease; text-transform: uppercase; letter-spacing: 1px; }
+        
         .btn-start { background-color: #10b981; color: white; box-shadow: 0 4px 12px rgba(16,185,129,0.3); }
         .btn-start:hover:not(:disabled) { background-color: #059669; transform: scale(1.03); }
         .btn-start:disabled { background-color: #94a3b8; color: #cbd5e1; opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+        
         .btn-stop { background-color: #f59e0b; color: white; box-shadow: 0 4px 12px rgba(245,158,11,0.3); }
         .btn-stop:hover:not(:disabled) { background-color: #d97706; transform: scale(1.03); }
         .btn-stop:disabled { background-color: #94a3b8; opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+
         .btn-finish { background: linear-gradient(90deg, #0284c7 0%, #0ea5e9 100%); color: white; box-shadow: 0 4px 12px rgba(14,165,233,0.3); }
         .btn-finish:hover:not(:disabled) { transform: scale(1.03); }
     </style>
@@ -327,17 +383,21 @@
         <div class="cinema-status" id="cinemaStatusText">⏸️ ĐANG TRONG TRẠNG THÁI CHỜ</div>
         <div class="cinema-name">${order.customerName}</div>
         <div class="cinema-service">${order.serviceName}</div>
+        
         <div class="progress-container">
             <div class="progress-bar" id="cinemaProgress"></div>
             <div class="time-display" id="timeDisplay">60:00</div>
         </div>
+        
         <div class="control-btns">
             <button class="btn-ctrl btn-start" id="btnStart">▶ START</button>
             <button class="btn-ctrl btn-stop" id="btnStop" disabled>⏸ PAUSE</button>
             <button class="btn-ctrl btn-finish" id="btnFinish">✅ HOÀN THÀNH SỚM</button>
         </div>
+        
         <div class="cinema-req">${reqText}</div>
     </div>
+
     <script>
         let countdownInterval;
         const totalSeconds = 3600;
@@ -345,6 +405,7 @@
         let timerRunning = false;
         const orderIndex = ${index};
 
+        // Lấy theme tự động từ tab mẹ truyền sang
         let currentTheme = localStorage.getItem('skyUberTheme') || 'light';
         document.documentElement.setAttribute('data-theme', currentTheme);
         updateToggleText();
@@ -374,6 +435,9 @@
                 currentOrders[orderIndex].status = status;
                 localStorage.setItem('skyUberOrders', JSON.stringify(currentOrders));
             }
+            if (window.opener && !window.opener.closed) {
+                try { window.opener.updateOrderStatusFromCinema(orderIndex, status); } catch(e){}
+            }
         }
 
         btnStart.addEventListener('click', () => {
@@ -386,6 +450,7 @@
 
             countdownInterval = setInterval(() => {
                 remainingSeconds--;
+                
                 let mins = Math.floor(remainingSeconds / 60);
                 let secs = remainingSeconds % 60;
                 timeDisplay.innerText = mins.toString().padStart(2, '0') + ':' + secs.toString().padStart(2, '0');
@@ -417,25 +482,26 @@
             clearInterval(countdownInterval);
             timerRunning = false;
             remainingSeconds = 0;
+            
             document.body.className = 'rgb-mode-done';
             statusText.innerText = '🎉 CHUYẾN ĐI ĐÃ HOÀN THÀNH XUẤT SẮC 🎉';
+            
             timeDisplay.innerText = '00:00';
             progress.style.width = '0%';
+            
             btnStart.disabled = true;
             btnStop.disabled = true;
             btnFinish.disabled = true;
+
             syncStatusToManager('Đã xong');
         });
     <\/script>
 </body>
-</html>`;
-
-        // Mã hóa chuỗi HTML thành dạng base64 an toàn cho trình duyệt
-        const blob = new Blob([cinemaHtml], { type: 'text/html;charset=utf-8' });
-        const blobUrl = URL.createObjectURL(blob);
+</html>
+        `;
         
-        // Mở tab mới chạy độc lập không sợ bị đơ script
-        window.open(blobUrl, '_blank');
+        newTab.document.write(cinemaHtml);
+        newTab.document.close();
     }
 
     renderOrders();
