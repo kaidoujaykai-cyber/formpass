@@ -171,10 +171,10 @@
                 <div class="form-group">
                     <label for="serviceName">🕯️ Tên Dịch Vụ</label>
                     <select id="serviceName" required>
-                        <option value="Full CR (Cày Nến)">Full CR (Cày Nến)</option>
-                        <option value="🪶 Gom Cánh (Winged Light)">🪶 Gom Cánh (Winged Light)</option>
-                        <option value="⛈️ Chạy Eden">⛈️ Chạy Eden</option>
-                        <option value="📦 Trọn Gói Tuần">📦 Trọn Gói Tuần</option>
+                        <option value="Full CR (Cày Nến)">Full Vạch + Quests</option>
+                        <option value="🪶 Gom Cánh (Winged Light)">Nhặt wl</option>
+                        <option value="⛈️ Chạy Eden">Eden Reborn</option>
+                        <option value="📦 Trọn Gói Tuần">Log ACC</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -239,7 +239,7 @@
         <div class="control-btns">
             <button class="btn-ctrl btn-start" id="btnStart" onclick="startTimer()">▶ START</button>
             <button class="btn-ctrl btn-stop" id="btnStop" onclick="pauseTimer()" disabled>⏸ PAUSE</button>
-            <button class="btn-ctrl btn-finish" id="btnFinish" onclick="finishEarly()">✅ HOÀN THÀNH SỚM</button>
+            <button class="btn-ctrl btn-finish" id="btnFinish" onclick="finishEarly()">✅ DONE</button>
         </div>
         
         <div class="cinema-req" id="cinemaRequirements">Yêu cầu đơn hàng</div>
@@ -391,7 +391,7 @@
         if (timerRunning) return;
         timerRunning = true;
         document.getElementById('cinemaOverlay').className = 'cinema-overlay rgb-mode-running';
-        document.getElementById('cinemaStatusText').innerText = '🚀 CHUYẾN BAY ĐANG BẮT ĐẦU 🚀';
+        document.getElementById('cinemaStatusText').innerText = '🚀 GET GOOOO 🚀';
         document.getElementById('btnStart').disabled = true;
         document.getElementById('btnStop').disabled = false;
 
@@ -407,7 +407,7 @@
                 clearInterval(countdownInterval);
                 timerRunning = false;
                 document.getElementById('cinemaOverlay').className = 'cinema-overlay rgb-mode-done';
-                document.getElementById('cinemaStatusText').innerText = '🎉 CHUYẾN ĐI ĐÃ HOÀN THÀNH XUẤT SẮC 🎉';
+                document.getElementById('cinemaStatusText').innerText = '🎉 CHUYẾN ĐI ĐƠN ĐÃ DONE! 🎉';
                 document.getElementById('btnStop').disabled = true;
                 document.getElementById('btnFinish').disabled = true;
                 
@@ -424,7 +424,7 @@
         timerRunning = false;
         clearInterval(countdownInterval);
         document.getElementById('cinemaOverlay').className = 'cinema-overlay rgb-mode-pause';
-        document.getElementById('cinemaStatusText').innerText = '⏸️ HÀNH TRÌNH ĐANG TẠM DỪNG';
+        document.getElementById('cinemaStatusText').innerText = '⏸️ STOP!';
         document.getElementById('btnStart').disabled = false;
         document.getElementById('btnStop').disabled = true;
     }
@@ -435,7 +435,7 @@
         remainingSeconds = 0;
         
         document.getElementById('cinemaOverlay').className = 'cinema-overlay rgb-mode-done';
-        document.getElementById('cinemaStatusText').innerText = '🎉 CHUYẾN ĐI ĐÃ HOÀN THÀNH XUẤT SẮC 🎉';
+        document.getElementById('cinemaStatusText').innerText = '🎉 CHUYẾN ĐI ĐƠN ĐÃ DONE! 🎉';
         
         document.getElementById('timeDisplay').innerText = '00:00';
         document.getElementById('cinemaProgress').style.width = '0%';
