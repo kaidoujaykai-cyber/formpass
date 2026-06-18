@@ -20,6 +20,7 @@
             background: var(--sky-bg); background-attachment: fixed;
             color: var(--text-color); margin: 0; padding: 12px;
             display: flex; flex-direction: column; align-items: center;
+            overflow-x: hidden; /* Ngăn chặn tràn màn hình ngang */
         }
 
         .container { width: 100%; max-width: 1200px; }
@@ -47,15 +48,13 @@
             background: var(--panel-bg); backdrop-filter: blur(10px); padding: 20px;
             border-radius: 25px; box-shadow: 0 8px 32px rgba(31, 38, 135, 0.06);
             margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.5);
+            width: 100%;
         }
 
         .form-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
             gap: 15px; 
-        }
-        @media (max-width: 600px) {
-            .form-grid { grid-template-columns: 1fr; }
         }
 
         .form-group { display: flex; flex-direction: column; width: 100%; }
@@ -64,6 +63,11 @@
         .form-group input, .form-group select, .form-group textarea {
             width: 100%; padding: 11px; border: 1px solid rgba(255, 255, 255, 0.7); border-radius: 12px;
             background: rgba(255, 255, 255, 0.85); color: var(--text-color); font-size: 0.95rem; outline: none;
+        }
+
+        /* Class tùy chỉnh để gom 2 cột trên máy tính */
+        .grid-span-2 {
+            grid-column: span 2;
         }
 
         .quests-grid {
@@ -119,6 +123,14 @@
             margin: 2px; 
             font-family: inherit; 
             font-weight: 600; 
+        }
+
+        /* RESPONSIVE CHO MÀN HÌNH ĐIỆN THOẠI */
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.8rem; }
+            .form-grid { grid-template-columns: 1fr; }
+            .grid-span-2 { grid-column: 1 / -1; } /* Reset lại 1 cột khi ở điện thoại */
+            .form-section, .list-section { padding: 15px; border-radius: 18px; }
         }
 
         @media (max-width: 768px) {
@@ -287,7 +299,6 @@
     <header>
         <h1>☁️ SKY UBER SERVICES ☁️</h1>
         <p>Hành trình chữa lành và những chuyến bay vạn dặm</p>
-        <!-- Đồng hồ thời gian thực màn hình quản lý chính -->
         <div class="realtime-clock-main" id="realtimeClockMain">00:00:00</div>
     </header>
 
@@ -308,10 +319,10 @@
                     <label for="serviceName">🕯️ Tên Dịch Vụ</label>
                     <select id="serviceName" required>
                         <option value="Full Vạch + Quests">Full Vạch + Quests</option>
-                        <option value="18 Nến + Quests">18 Nến + Quests</option>
                         <option value="Xám nến + Quests">Xám nến + Quests</option>
                         <option value="Nhặt wl">Nhặt wl</option>
                         <option value="Eden Reborn">Eden Reborn</option>
+                        <option value="18 Nến + Quests">18 Nến + Quests</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -322,7 +333,8 @@
                     <label for="totalHearts">💖 Tổng Số Tim</label>
                     <input type="number" id="totalHearts" min="0" placeholder="Ví dụ: 1" required>
                 </div>
-                <div class="form-group" style="grid-column: span 2;">
+                
+                <div class="form-group grid-span-2">
                     <label for="requirements">📝 Yêu Cầu Về Đơn</label>
                     <textarea id="requirements" rows="2" placeholder="Ví dụ: Không nhặt map 5..."></textarea>
                 </div>
@@ -382,7 +394,6 @@
     <div class="cinema-card">
         <button class="btn-close-cinema" onclick="closeCinema()">✕</button>
         <div class="cinema-status" id="cinemaStatusText">⏸️GET READY!</div>
-        <!-- Đồng hồ thời gian thực màn hình treo máy -->
         <div class="realtime-clock-cinema" id="realtimeClockCinema">00:00:00</div>
         <div class="cinema-name" id="cinemaCustomerName">Tên Khách Hàng</div>
         <div class="cinema-service" id="cinemaServiceName">Tên Dịch Vụ</div>
@@ -432,7 +443,753 @@
         document.getElementById('realtimeClockMain').innerText = timeString;
         document.getElementById('realtimeClockCinema').innerText = timeString;
     }
-    // Khởi chạy đồng hồ real-time ngay khi mở web và cập nhật mỗi giây
+    updateRealTimeClocks();
+    setInterval(updateRealTimeClocks, 1000);
+
+    function saveData() {
+        localStorage.setItem('skyUberOrders', JSON.stringify(orders));
+        renderOrders();
+    }
+
+    function formatDateTime(dateTimeStr) {
+        const d = new Date(dateTimeStr);
+        return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth()+1).toString().padStart(2, '0')} - ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+    }
+
+    function renderOrders() {
+        const tbody = document.getElementById('orderTableBody');
+        const emptyMsg = document.getElementById('emptyMessage');
+        tbody.innerHTML = '';
+
+        const filteredOrders = orders.filter(order => currentFilter === 'all' || order.status === currentFilter);
+        if (filteredOrders.length === 0) { emptyMsg.style.display = 'block'; return; } else { emptyMsg.style.display = 'none'; }
+
+        let count = 1;
+
+        filteredOrders.forEach((order) => {
+            const actualIndex = orders.indexOf(order);
+            let statusClass = 'status-waiting';
+            let cinemaBtn = '';
+
+            if (order.status === 'Đang chạy' || order.status === 'Đã xong') {
+                cinemaBtn = `<button class="btn-action" onclick="openCinemaModal(${actualIndex})" title="Mở màn hình treo máy">📺</button>`;
+            }
+            if (order.status === 'Đang chạy') statusClass = 'status-running';
+            if (order.status === 'Đã xong') statusClass = 'status-done';
+
+            const blockCode = order.orderId ? `<div class="id-badge">Đơn: ${order.orderId}</div>` : '';
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td data-label="STT" style="text-align: center; font-weight: bold; color: #7f8c8d;">${count++}</td>
+                <td data-label="Mã Đơn">${blockCode || '<span style="color:#aaa;">-</span>'}</td>
+                <td data-label="Khách Hàng" style="font-weight:600;"><span class="wrap-text">${order.customerName}</span></td>
+                <td data-label="Dịch Vụ"><span class="wrap-text">${order.serviceName}</span></td>
+                <td data-label="Thời Gian" style="font-size:0.85rem;">${formatDateTime(order.startTime)}</td>
+                <td data-label="Yêu Cầu" style="font-size:0.85rem;"><span class="wrap-text">${order.requirements || 'Không có yêu cầu'}</span></td>
+                <td data-label="Giá (💖)" style="font-weight:bold; color:#e056fd;">${order.totalHearts} 💖</td>
+                <td data-label="Trạng Thái"><span class="status-badge ${statusClass}">${order.status}</span></td>
+                <td data-label="Hành Động">
+                    <div class="action-group">
+                        ${cinemaBtn}
+                        <button class="btn-action" onclick="editOrder(${actualIndex})" title="Chỉnh sửa đơn">📝</button>
+                        <button class="btn-action" onclick="changeStatus(${actualIndex})" title="Đổi trạng thái">🔄</button>
+                        <button class="btn-action" onclick="deleteOrder(${actualIndex})" title="Xóa">❌</button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    document.getElementById('orderForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const editIndex = document.getElementById('editIndex').value;
+        
+        const questList = [
+            { text: document.getElementById('quest1').value.trim(), checked: false },
+            { text: document.getElementById('quest2').value.trim(), checked: false },
+            { text: document.getElementById('quest3').value.trim(), checked: false },
+            { text: document.getElementById('quest4').value.trim(), checked: false }
+        ];
+
+        const orderData = {
+            orderId: document.getElementById('orderId').value.trim(),
+            customerName: document.getElementById('customerName').value,
+            serviceName: document.getElementById('serviceName').value,
+            startTime: document.getElementById('startTime').value,
+            totalHearts: document.getElementById('totalHearts').value,
+            requirements: document.getElementById('requirements').value,
+            quests: questList,
+            status: editIndex !== "" ? orders[editIndex].status : 'Đang đợi'
+        };
+
+        if (editIndex !== "") {
+            if(orders[editIndex].quests) {
+                for(let i=0; i<4; i++) {
+                    if(orders[editIndex].quests[i] && orders[editIndex].quests[i].text === questList[i].text) {
+                        orderData.quests[i].checked = orders[editIndex].quests[i].checked;
+                    }
+                }
+            }
+            orders[editIndex] = orderData;
+            document.getElementById('editIndex').value = "";
+            const submitBtn = document.getElementById('btnSubmitForm');
+            submitBtn.innerText = "✨ THÊM ĐƠN ✨";
+            submitBtn.classList.remove('editing-mode');
+        } else {
+            orders.push(orderData);
+        }
+
+        saveData();
+        this.reset();
+        document.getElementById('startTime').value = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16);
+    });
+
+    function editOrder(index) {
+        const order = orders[index];
+        document.getElementById('editIndex').value = index;
+        
+        document.getElementById('orderId').value = order.orderId || '';
+        document.getElementById('customerName').value = order.customerName;
+        document.getElementById('serviceName').value = order.serviceName;
+        document.getElementById('startTime').value = order.startTime;
+        document.getElementById('totalHearts').value = order.totalHearts;
+        document.getElementById('requirements').value = order.requirements || '';
+
+        if (order.quests) {
+            document.getElementById('quest1').value = order.quests[0] ? order.quests[0].text : '';
+            document.getElementById('quest2').value = order.quests[1] ? order.quests[1].text : '';
+            document.getElementById('quest3').value = order.quests[2] ? order.quests[2].text : '';
+            document.getElementById('quest4').value = order.quests[3] ? order.quests[3].text : '';
+        } else {
+            document.getElementById('quest1').value = '';
+            document.getElementById('quest2').value = '';
+            document.getElementById('quest3').value = '';
+            document.getElementById('quest4').value = '';
+        }
+
+        const submitBtn = document.getElementById('btnSubmitForm');
+        submitBtn.innerText = "💾 CẬP NHẬT ĐƠN 💾";
+        submitBtn.classList.add('editing-mode');
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function changeStatus(index) {
+        const current = orders[index].status;
+        if (current === 'Đang đợi') orders[index].status = 'Đang chạy';
+        else if (current === 'Đang chạy') orders[index].status = 'Đã xong';
+        else orders[index].status = 'Đang đợi';
+        saveData();
+    }
+
+    function deleteOrder(index) {
+        if(confirm("Xóa chuyến xe này chứ?")) { 
+            orders.splice(index, 1); 
+            if(activeOrderIndex === index) { closeCinema(); }
+            saveData(); 
+        }
+    }
+
+    function filterOrders(filterType) {
+        currentFilter = filterType;
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+        renderOrders();
+    }
+
+    function openCinemaModal(index) {
+        const order = orders[index];
+        const overlay = document.getElementById('cinemaOverlay');
+        
+        if (activeOrderIndex !== index || order.status !== 'Đã xong') {
+            clearInterval(countdownInterval);
+            timerRunning = false;
+            activeOrderIndex = index;
+            
+            if (order.status === 'Đã xong') {
+                remainingSeconds = 0;
+                document.getElementById('btnStart').disabled = true;
+                document.getElementById('btnStop').disabled = true;
+                document.getElementById('btnFinish').disabled = true;
+                overlay.className = 'cinema-overlay rgb-mode-done';
+                document.getElementById('cinemaStatusText').innerText = '🎉 ĐƠN ĐÃ HOÀN THÀNH 🎉';
+                document.getElementById('timeDisplay').innerText = '00:00';
+                document.getElementById('cinemaProgress').style.width = '0%';
+            } else {
+                remainingSeconds = totalSeconds;
+                document.getElementById('btnStart').disabled = false;
+                document.getElementById('btnStop').disabled = true;
+                document.getElementById('btnFinish').disabled = false;
+                overlay.className = 'cinema-overlay rgb-mode-pause';
+                document.getElementById('cinemaStatusText').innerText = '⏸️ STOPPING!';
+                document.getElementById('timeDisplay').innerText = '60:00';
+                document.getElementById('cinemaProgress').style.width = '100%';
+            }
+        }
+
+        document.getElementById('cinemaCustomerName').innerText = order.customerName;
+        document.getElementById('cinemaServiceName').innerText = order.serviceName;
+        
+        const questsArea = document.getElementById('cinemaQuestsArea');
+        const questsListContainer = document.getElementById('cinemaQuestsList');
+        questsListContainer.innerHTML = '';
+        
+        const hasQuests = order.quests && order.quests.some(q => q.text !== '');
+        
+        if (hasQuests) {
+            questsArea.style.display = 'block';
+            order.quests.forEach((q, i) => {
+                if (q.text !== '') {
+                    const item = document.createElement('div');
+                    item.className = 'cinema-quest-item';
+                    item.innerHTML = `
+                        <input type="checkbox" class="cinema-quest-checkbox" ${q.checked ? 'checked' : ''} onchange="toggleQuest(${index}, ${i}, this)">
+                        <span class="cinema-quest-text ${q.checked ? 'completed' : ''}">${q.text}</span>
+                    `;
+                    questsListContainer.appendChild(item);
+                }
+            });
+        } else {
+            questsArea.style.display = 'none';
+        }
+        
+        let reqText = order.requirements ? `“ Yêu cầu: ${order.requirements} ”` : "“ Không có yêu cầu đặc biệt ”";
+        if (order.orderId) reqText = `Mã đơn: ${order.orderId} | ` + reqText;
+        document.getElementById('cinemaRequirements').innerText = reqText;
+        
+        overlay.classList.add('active');
+    }
+
+    function toggleQuest(orderIdx, questIdx, checkboxElem) {
+        orders[orderIdx].quests[questIdx].checked = checkboxElem.checked;
+        
+        const textElem = checkboxElem.nextElementSibling;
+        if(checkboxElem.checked) {
+            textElem.classList.add('completed');
+        } else {
+            textElem.classList.remove('completed');
+        }
+        localStorage.setItem('skyUberOrders', JSON.stringify(orders));
+    }
+
+    function closeCinema() {
+        document.getElementById('cinemaOverlay').classList.remove('active');
+    }
+
+    function startTimer() {
+        if (timerRunning) return;
+        timerRunning = true;
+        document.getElementById('cinemaOverlay').className = 'cinema-overlay rgb-mode-running active';
+        document.getElementById('cinemaStatusText').innerText = '🚀 GÉT GOOOO 🚀';
+        document.getElementById('btnStart').disabled = true;
+        document.getElementById('btnStop').disabled = false;
+
+        countdownInterval = setInterval(() => {
+            remainingSeconds--;
+            
+            let mins = Math.floor(remainingSeconds / 60);
+            let secs = remainingSeconds % 60;
+            document.getElementById('timeDisplay').innerText = mins.toString().padStart(2, '0') + ':' + secs.toString().padStart(2, '0');
+            document.getElementById('cinemaProgress').style.width = ((remainingSeconds / totalSeconds) * 100) + '%';
+
+            if (remainingSeconds <= 0) {
+                clearInterval(countdownInterval);
+                timerRunning = false;
+                document.getElementById('cinemaOverlay').className = 'cinema-overlay rgb-mode-done active';
+                document.getElementById('cinemaStatusText').innerText = '🎉 ĐƠN ĐÃ HOÀN THÀNH 🎉';
+                document.getElementById('btnStop').disabled = true;
+                document.getElementById('btnFinish').disabled = true;
+                
+                if(activeOrderIndex !== null && orders[activeOrderIndex]) {
+                    orders[activeOrderIndex].status = 'Đã xong';
+                    saveData();
+                }
+            }
+        }, 1000);
+    }
+
+    function pauseTimer() {
+        if (!timerRunning) return;
+        timerRunning = false;
+        clearInterval(countdownInterval);
+        document.getElementById('cinemaOverlay').className = 'cinema-overlay rgb-mode-pause active';
+        document.getElementById('cinemaStatusText').innerText = '⏸️ STOPPING';
+        document.getElementById('btnStart').disabled = false;
+        document.getElementById('btnStop').disabled = true;
+    }
+
+    function finishEarly() {
+        clearInterval(countdownInterval);
+        timerRunning = false;
+        remainingSeconds = 0;
+        
+        document.getElementById('cinemaOverlay').className = 'cinema-overlay rgb-mode-done active';
+        document.getElementById('cinemaStatusText').innerText = '🎉 ĐƠN ĐÃ HOÀN THÀNH 🎉';
+        
+        document.getElementById('timeDisplay').innerText = '00:00';
+        document.getElementById('cinemaProgress').style.width = '0%';
+        
+        document.getElementById('btnStart').disabled = true;
+        document.getElementById('btnStop').disabled = true;
+        document.getElementById('btnFinish').disabled = true;
+
+        if(activeOrderIndex !== null && orders[activeOrderIndex]) {
+            orders[activeOrderIndex].status = 'Đã xong';
+            saveData();
+        }
+    }
+
+    renderOrders();
+</script>
+</body>
+</html><!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sky: Children of the Light - Uber Manager</title>
+    <style>
+        :root {
+            --sky-bg: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+            --panel-bg: rgba(255, 255, 255, 0.75);
+            --text-color: #3e5263;
+            --accent-color: #6da2db;
+            --edit-color: #f39c12;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--sky-bg); background-attachment: fixed;
+            color: var(--text-color); margin: 0; padding: 12px;
+            display: flex; flex-direction: column; align-items: center;
+            overflow-x: hidden; /* Ngăn chặn tràn màn hình ngang */
+        }
+
+        .container { width: 100%; max-width: 1200px; }
+        
+        header { text-align: center; margin-bottom: 20px; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        header h1 { margin: 0; font-size: 2.2rem; color: #fff; letter-spacing: 2px; }
+        header p { margin: 5px 0 0 0; color: #52799f; font-style: italic; font-size: 0.9rem; }
+        
+        /* Phong cách đồng hồ ở màn hình chính */
+        .realtime-clock-main {
+            margin-top: 8px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #4a6a8a;
+            background: rgba(255, 255, 255, 0.4);
+            padding: 4px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-section, .list-section {
+            background: var(--panel-bg); backdrop-filter: blur(10px); padding: 20px;
+            border-radius: 25px; box-shadow: 0 8px 32px rgba(31, 38, 135, 0.06);
+            margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.5);
+            width: 100%;
+        }
+
+        .form-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 15px; 
+        }
+
+        .form-group { display: flex; flex-direction: column; width: 100%; }
+        .form-group label { font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; color: #4a637a; }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 11px; border: 1px solid rgba(255, 255, 255, 0.7); border-radius: 12px;
+            background: rgba(255, 255, 255, 0.85); color: var(--text-color); font-size: 0.95rem; outline: none;
+        }
+
+        /* Class tùy chỉnh để gom 2 cột trên máy tính */
+        .grid-span-2 {
+            grid-column: span 2;
+        }
+
+        .quests-grid {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.4);
+            padding: 15px;
+            border-radius: 15px;
+            border: 1px dashed rgba(109, 162, 219, 0.5);
+            margin-top: 5px;
+        }
+        .quests-title {
+            grid-column: 1 / -1;
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: #34495e;
+            margin-bottom: -5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-submit {
+            grid-column: 1 / -1; background: #fff; color: var(--accent-color); border: 2px solid var(--accent-color);
+            padding: 12px; font-size: 1rem; font-weight: bold; border-radius: 12px; cursor: pointer; transition: all 0.3s; margin-top: 5px;
+        }
+        .btn-submit:hover { background: var(--accent-color); color: #fff; }
+        .btn-submit.editing-mode { color: var(--edit-color); border-color: var(--edit-color); }
+        .btn-submit.editing-mode:hover { background: var(--edit-color); color: #fff; }
+
+        .filter-bar { margin-bottom: 15px; display: flex; gap: 8px; flex-wrap: wrap; }
+        .filter-btn {
+            background: rgba(255, 255, 255, 0.6); border: none; padding: 8px 14px; border-radius: 20px;
+            cursor: pointer; font-weight: 500; color: var(--text-color); transition: all 0.2s; font-size: 0.85rem;
+            border: 1px solid rgba(255,255,255,0.4);
+        }
+        .filter-btn.active, .filter-btn:hover { background: var(--accent-color); color: #fff; border-color: var(--accent-color); }
+
+        .table-container { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 12px 14px; border-bottom: 1px solid rgba(0, 0, 0, 0.05); font-size: 0.95rem; }
+        th { background-color: rgba(109, 162, 219, 0.15); color: #34495e; font-weight: 600; }
+
+        .id-badge { 
+            font-size: 0.85rem; 
+            background: rgba(0,0,0,0.06); 
+            padding: 4px 10px; 
+            border-radius: 8px; 
+            color: #5a738e; 
+            display: inline-block; 
+            margin: 2px; 
+            font-family: inherit; 
+            font-weight: 600; 
+        }
+
+        /* RESPONSIVE CHO MÀN HÌNH ĐIỆN THOẠI */
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.8rem; }
+            .form-grid { grid-template-columns: 1fr; }
+            .grid-span-2 { grid-column: 1 / -1; } /* Reset lại 1 cột khi ở điện thoại */
+            .form-section, .list-section { padding: 15px; border-radius: 18px; }
+        }
+
+        @media (max-width: 768px) {
+            table, thead, tbody, th, td, tr { display: block; }
+            thead { display: none; }
+            tr { 
+                background: rgba(255, 255, 255, 0.4); border: 1px solid rgba(255,255,255,0.5);
+                border-radius: 15px; padding: 12px; margin-bottom: 12px; 
+            }
+            td { 
+                border: none; padding: 8px 0; display: flex; justify-content: space-between; align-items: flex-start; 
+                border-bottom: 1px dashed rgba(0,0,0,0.05); text-align: right;
+            }
+            td:last-child { border: none; padding-top: 10px; }
+            
+            td::before { 
+                content: attr(data-label); font-weight: bold; color: #4a637a; font-size: 0.9rem; 
+                padding-right: 15px; text-align: left; min-width: 110px; flex-shrink: 0;
+            }
+            
+            .wrap-text {
+                word-break: break-word;
+                overflow-wrap: break-word;
+                white-space: normal;
+                text-align: right;
+                width: 100%;
+            }
+        }
+
+        .status-badge { padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; white-space: nowrap; display: inline-block; }
+        .status-waiting { background-color: #ffe3a8; color: #b06a00; }
+        .status-running { background-color: #cfe2ff; color: #0a58ca; }
+        .status-done { background-color: #d1e7dd; color: #0f5132; }
+
+        .action-group { display: flex; gap: 6px; align-items: center; justify-content: flex-end; width: 100%; flex-wrap: wrap; }
+        .btn-action { border: none; background: rgba(255,255,255,0.5); cursor: pointer; font-size: 1.05rem; padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; }
+        
+        /* ==================== SCREEN TREO MÁY CHUẨN LED RGB & CHUYỂN CẢNH MƯỢT MÀ ==================== */
+        .cinema-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center; z-index: 9999;
+            background-size: 400% 400%;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        
+        .cinema-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .cinema-overlay.rgb-mode-pause { 
+            background-image: linear-gradient(-45deg, #0f172a, #1e1b4b, #2e1065, #172554); 
+            animation: rgbMovement 12s ease infinite; 
+        }
+        .cinema-overlay.rgb-mode-running { 
+            background-image: linear-gradient(-45deg, #f43f5e, #ec4899, #8b5cf6, #3b82f6); 
+            animation: rgbMovement 6s linear infinite; 
+        }
+        .cinema-overlay.rgb-mode-done { 
+            background-image: linear-gradient(-45deg, #059669, #10b981, #06b6d4, #0284c7); 
+            animation: rgbMovement 8s ease infinite; 
+        }
+        
+        @keyframes rgbMovement { 
+            0% { background-position: 0% 50%; } 
+            50% { background-position: 100% 50%; } 
+            100% { background-position: 0% 50%; } 
+        }
+
+        .cinema-card {
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(25px);
+            padding: 30px 20px; border-radius: 25px; border: 2px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.6); width: 92%; max-width: 500px; text-align: center; color: white;
+            position: relative;
+            transform: scale(0.85);
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        
+        .cinema-overlay.active .cinema-card {
+            transform: scale(1);
+        }
+
+        .btn-close-cinema {
+            position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.2);
+            border: none; color: white; font-size: 1.2rem; width: 35px; height: 35px;
+            border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        .cinema-status { font-size: 0.85rem; letter-spacing: 3px; text-transform: uppercase; font-weight: 800; text-shadow: 0 0 10px rgba(255,255,255,0.5); margin-bottom: 12px; }
+        
+        /* Phong cách đồng hồ ở màn hình treo máy */
+        .realtime-clock-cinema {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #00ffff;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            text-shadow: 0 0 8px rgba(0, 255, 255, 0.6);
+            font-family: monospace, sans-serif;
+        }
+
+        .cinema-name { font-size: 2.2rem; margin: 8px 0; font-weight: 800; word-wrap: break-word; }
+        .cinema-service { font-size: 1.1rem; color: #00ffff; font-weight: bold; background: rgba(255,255,255,0.1); padding: 6px 18px; border-radius: 50px; display: inline-block; margin-bottom: 18px; border: 1px solid rgba(0,213,255,0.3); }
+        .cinema-req { font-style: italic; color: #cbd5e1; font-size: 0.9rem; margin-top: 15px; line-height: 1.4; word-break: break-word; }
+
+        /* KHIỂN ĐƠN NHIỆM VỤ DAILY TRÊN MÀN HÌNH CINEMA */
+        .cinema-quests-container {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 12px 15px;
+            margin: 15px 0;
+            text-align: left;
+        }
+        .cinema-quests-header {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            color: #00ffff;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .cinema-quest-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 0;
+            font-size: 0.95rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            color: #f1f5f9;
+        }
+        .cinema-quest-item:last-child { border: none; }
+        .cinema-quest-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #00ffff;
+        }
+        .cinema-quest-text.completed {
+            text-decoration: line-through;
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        .progress-container { width: 100%; background: rgba(0, 0, 0, 0.4); height: 26px; border-radius: 13px; margin: 15px auto; overflow: hidden; position: relative; border: 1px solid rgba(255, 255, 255, 0.2); }
+        .progress-bar { width: 100%; background: linear-gradient(90deg, #00f2fe, #4facfe); height: 100%; transition: width 1s linear; }
+        .time-display { position: absolute; width: 100%; top: 0; left: 0; line-height: 26px; font-size: 1.1rem; font-weight: bold; text-shadow: 0 0 5px #000; text-align: center; color: white; }
+
+        .control-btns { display: flex; justify-content: center; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
+        .btn-ctrl { border: none; padding: 10px 18px; font-size: 0.85rem; font-weight: bold; border-radius: 10px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .btn-start { background-color: #10b981; color: white; }
+        .btn-start:disabled { background-color: #475569; color: #cbd5e1; opacity: 0.2; cursor: not-allowed; }
+        .btn-stop { background-color: #f59e0b; color: white; }
+        .btn-stop:disabled { background-color: #475569; color: #cbd5e1; opacity: 0.2; cursor: not-allowed; }
+        .btn-finish { background: linear-gradient(90deg, #00f2fe 0%, #4facfe 100%); color: white; }
+        .btn-finish:disabled { background: #475569; color: #cbd5e1; opacity: 0.2; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>☁️ SKY UBER SERVICES ☁️</h1>
+        <p>Hành trình chữa lành và những chuyến bay vạn dặm</p>
+        <div class="realtime-clock-main" id="realtimeClockMain">00:00:00</div>
+    </header>
+
+    <div class="form-section">
+        <form id="orderForm">
+            <input type="hidden" id="editIndex" value="">
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="orderId">🔑 Mã Đơn</label>
+                    <input type="text" id="orderId" placeholder="Ví dụ: SS001">
+                </div>
+                <div class="form-group">
+                    <label for="customerName">👤 Tên Khách Hàng</label>
+                    <input type="text" id="customerName" placeholder="Ví dụ: yw.ld,..." required>
+                </div>
+                <div class="form-group">
+                    <label for="serviceName">🕯️ Tên Dịch Vụ</label>
+                    <select id="serviceName" required>
+                        <option value="Full Vạch + Quests">Full Vạch + Quests</option>
+                        <option value="Xám nến + Quests">Xám nến + Quests</option>
+                        <option value="Nhặt wl">Nhặt wl</option>
+                        <option value="Eden Reborn">Eden Reborn</option>
+                        <option value="18 Nến + Quests">18 Nến + Quests</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="startTime">🕒 Thời Gian Bắt Đầu</label>
+                    <input type="datetime-local" id="startTime" required>
+                </div>
+                <div class="form-group">
+                    <label for="totalHearts">💖 Tổng Số Tim</label>
+                    <input type="number" id="totalHearts" min="0" placeholder="Ví dụ: 1" required>
+                </div>
+                
+                <div class="form-group grid-span-2">
+                    <label for="requirements">📝 Yêu Cầu Về Đơn</label>
+                    <textarea id="requirements" rows="2" placeholder="Ví dụ: Không nhặt map 5..."></textarea>
+                </div>
+
+                <div class="quests-grid">
+                    <div class="quests-title">📅 Daily Quests</div>
+                    <div class="form-group">
+                        <input type="text" id="quest1" placeholder="Nhiệm vụ 1...">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="quest2" placeholder="Nhiệm vụ 2...">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="quest3" placeholder="Nhiệm vụ 3...">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="quest4" placeholder="Nhiệm vụ 4...">
+                    </div>
+                </div>
+
+                <button type="submit" id="btnSubmitForm" class="btn-submit">✨ THÊM ĐƠN ✨</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="list-section">
+        <div class="filter-bar">
+            <button class="filter-btn active" onclick="filterOrders('all')">Tất Cả</button>
+            <button class="filter-btn" onclick="filterOrders('Đang đợi')">⏳ Đang Đợi</button>
+            <button class="filter-btn" onclick="filterOrders('Đang chạy')">🏄‍♂️ Đang Chạy</button>
+            <button class="filter-btn" onclick="filterOrders('Đã xong')">✅ Đã Xong</button>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 60px; text-align: center;">STT</th>
+                        <th>Mã Đơn</th>
+                        <th>Khách Hàng</th>
+                        <th>Dịch Vụ</th>
+                        <th>Thời Gian</th>
+                        <th>Yêu Cầu</th>
+                        <th>Giá (💖)</th>
+                        <th>Trạng Thái</th>
+                        <th>Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody id="orderTableBody"></tbody>
+            </table>
+            <div id="emptyMessage" style="text-align: center; padding: 20px; display: none; color: grey;">Chưa có chuyến xe nào... ✨</div>
+        </div>
+    </div>
+</div>
+
+<div class="cinema-overlay rgb-mode-pause" id="cinemaOverlay">
+    <div class="cinema-card">
+        <button class="btn-close-cinema" onclick="closeCinema()">✕</button>
+        <div class="cinema-status" id="cinemaStatusText">⏸️GET READY!</div>
+        <div class="realtime-clock-cinema" id="realtimeClockCinema">00:00:00</div>
+        <div class="cinema-name" id="cinemaCustomerName">Tên Khách Hàng</div>
+        <div class="cinema-service" id="cinemaServiceName">Tên Dịch Vụ</div>
+        
+        <div class="cinema-quests-container" id="cinemaQuestsArea" style="display: none;">
+            <div class="cinema-quests-header">🎯 Mức độ hoàn thành Daily Quests</div>
+            <div id="cinemaQuestsList"></div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar" id="cinemaProgress"></div>
+            <div class="time-display" id="timeDisplay">60:00</div>
+        </div>
+        
+        <div class="control-btns">
+            <button class="btn-ctrl btn-start" id="btnStart" onclick="startTimer()">▶ START</button>
+            <button class="btn-ctrl btn-stop" id="btnStop" onclick="pauseTimer()" disabled>⏸ PAUSE</button>
+            <button class="btn-ctrl btn-finish" id="btnFinish" onclick="finishEarly()">✅ DONE</button>
+        </div>
+        
+        <div class="cinema-req" id="cinemaRequirements">Yêu cầu đơn hàng</div>
+    </div>
+</div>
+
+<script>
+    let orders = JSON.parse(localStorage.getItem('skyUberOrders')) || [];
+    let currentFilter = 'all';
+
+    let countdownInterval;
+    let totalSeconds = 3600;
+    let remainingSeconds = totalSeconds;
+    let timerRunning = false;
+    let activeOrderIndex = null;
+
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById('startTime').value = now.toISOString().slice(0,16);
+
+    // HÀM UPDATE ĐỒNG HỒ THEO GIỜ THỰC CHẠY LIÊN TỤC
+    function updateRealTimeClocks() {
+        const d = new Date();
+        const hours = d.getHours().toString().padStart(2, '0');
+        const minutes = d.getMinutes().toString().padStart(2, '0');
+        const seconds = d.getSeconds().toString().padStart(2, '0');
+        const timeString = `${hours}:${minutes}:${seconds}`;
+        
+        document.getElementById('realtimeClockMain').innerText = timeString;
+        document.getElementById('realtimeClockCinema').innerText = timeString;
+    }
     updateRealTimeClocks();
     setInterval(updateRealTimeClocks, 1000);
 
