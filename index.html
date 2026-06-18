@@ -10,110 +10,98 @@
             --panel-bg: rgba(255, 255, 255, 0.65);
             --text-color: #3e5263;
             --accent-color: #6da2db;
+            --table-th: rgba(109, 162, 219, 0.15);
+            --input-bg: rgba(255, 255, 255, 0.8);
+            --border-color: rgba(255, 255, 255, 0.6);
+        }
+
+        [data-theme="dark"] {
+            --sky-bg: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            --panel-bg: rgba(30, 41, 59, 0.7);
+            --text-color: #f1f5f9;
+            --accent-color: #38bdf8;
+            --table-th: rgba(56, 189, 248, 0.15);
+            --input-bg: rgba(15, 23, 42, 0.6);
+            --border-color: rgba(255, 255, 255, 0.1);
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: var(--sky-bg); background-attachment: fixed;
-            color: var(--text-color); margin: 0; padding: 15px;
+            color: var(--text-color); margin: 0; padding: 20px;
             display: flex; flex-direction: column; align-items: center;
+            transition: background 0.3s, color 0.3s;
         }
 
-        .container { width: 100%; max-width: 1100px; }
-        header { text-align: center; margin-bottom: 20px; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        header h1 { margin: 0; font-size: 2rem; color: #fff; letter-spacing: 2px; }
-        header p { margin: 5px 0 0 0; color: #52799f; font-style: italic; font-size: 0.9rem; }
+        .container { width: 100%; max-width: 1100px; position: relative; }
+        
+        header { text-align: center; margin-bottom: 30px; }
+        header h1 { margin: 0; font-size: 2.5rem; color: #fff; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        header p { margin: 5px 0 0 0; color: #52799f; font-style: italic; }
+        [data-theme="dark"] header h1 { color: var(--accent-color); }
+        [data-theme="dark"] header p { color: #94a3b8; }
+
+        .theme-toggle-btn {
+            position: absolute; top: 0; right: 0; background: var(--panel-bg);
+            border: 1px solid var(--border-color); color: var(--text-color);
+            padding: 10px 15px; border-radius: 50px; cursor: pointer;
+            font-weight: bold; font-size: 0.9rem; transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
 
         .form-section, .list-section {
-            background: var(--panel-bg); backdrop-filter: blur(10px); padding: 20px;
+            background: var(--panel-bg); backdrop-filter: blur(10px); padding: 25px;
             border-radius: 20px; box-shadow: 0 8px 32px rgba(31, 38, 135, 0.07);
-            margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.4);
+            margin-bottom: 25px; border: 1px solid var(--border-color);
+            transition: all 0.3s;
         }
 
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
         .form-group { display: flex; flex-direction: column; }
-        .form-group label { font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; color: #4a637a; }
+        .form-group label { font-size: 0.9rem; font-weight: 600; margin-bottom: 5px; color: var(--text-color); opacity: 0.9; }
         .form-group input, .form-group select, .form-group textarea {
-            padding: 10px; border: 1px solid rgba(255, 255, 255, 0.6); border-radius: 10px;
-            background: rgba(255, 255, 255, 0.8); color: var(--text-color); font-size: 0.9rem; outline: none;
+            padding: 10px; border: 1px solid var(--border-color); border-radius: 10px;
+            background: var(--input-bg); color: var(--text-color); font-size: 0.95rem; outline: none;
+            transition: all 0.3s;
         }
 
         .btn-submit {
-            grid-column: 1 / -1; background: #fff; color: var(--accent-color); border: 2px solid var(--accent-color);
-            padding: 12px; font-size: 1rem; font-weight: bold; border-radius: 10px; cursor: pointer; transition: all 0.3s; margin-top: 5px;
+            grid-column: 1 / -1; background: transparent; color: var(--accent-color); border: 2px solid var(--accent-color);
+            padding: 12px; font-size: 1rem; font-weight: bold; border-radius: 10px; cursor: pointer; transition: all 0.3s; margin-top: 10px;
         }
-        .btn-submit:hover { background: var(--accent-color); color: #fff; }
+        .btn-submit:hover { background: var(--accent-color); color: #fff; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3); }
 
-        .filter-bar { margin-bottom: 15px; display: flex; gap: 8px; flex-wrap: wrap; }
+        .filter-bar { margin-bottom: 20px; display: flex; gap: 10px; }
         .filter-btn {
-            background: rgba(255, 255, 255, 0.5); border: none; padding: 6px 14px; border-radius: 20px;
-            cursor: pointer; font-weight: 500; color: var(--text-color); transition: all 0.2s; font-size: 0.85rem;
+            background: rgba(255, 255, 255, 0.2); border: none; padding: 8px 16px; border-radius: 20px;
+            cursor: pointer; font-weight: 500; color: var(--text-color); transition: all 0.2s;
+            border: 1px solid var(--border-color);
         }
         .filter-btn.active, .filter-btn:hover { background: var(--accent-color); color: #fff; }
 
         table { width: 100%; border-collapse: collapse; text-align: left; }
-        th, td { padding: 12px 10px; border-bottom: 1px solid rgba(0, 0, 0, 0.05); font-size: 0.9rem; }
-        th { background-color: rgba(109, 162, 219, 0.15); color: #34495e; }
+        th, td { padding: 14px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        th { background-color: var(--table-th); color: var(--text-color); }
 
-        .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; white-space: nowrap; }
+        .status-badge { padding: 5px 10px; border-radius: 12px; font-size: 0.85rem; font-weight: 600; }
         .status-waiting { background-color: #ffe3a8; color: #b06a00; }
         .status-running { background-color: #cfe2ff; color: #0a58ca; }
         .status-done { background-color: #d1e7dd; color: #0f5132; }
 
-        .btn-action { border: none; background: none; cursor: pointer; font-size: 1.1rem; margin-right: 5px; padding: 4px; }
-        
-        /* ==================== GIAO DIỆN TREO MÁY TRÊN ĐIỆN THOẠI (MODAL OVERLAY) ==================== */
-        .cinema-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            display: none; justify-content: center; align-items: center; z-index: 9999;
-            transition: all 0.5s ease;
-        }
-        .rgb-mode-pause { background: linear-gradient(-45deg, #0f172a, #1e1b4b, #2e1065, #172554); background-size: 400% 400%; animation: rgbPause 15s ease infinite; }
-        .rgb-mode-running { background: linear-gradient(-45deg, #ec4899, #8b5cf6, #3b82f6, #f43f5e); background-size: 400% 400%; animation: rgbRunning 6s linear infinite; }
-        .rgb-mode-done { background: linear-gradient(-45deg, #059669, #10b981, #06b6d4, #0284c7); background-size: 400% 400%; animation: rgbPause 8s ease infinite; }
-        
-        @keyframes rgbPause { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        @keyframes rgbRunning { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-
-        .cinema-card {
-            background: rgba(0, 0, 0, 0.55); backdrop-filter: blur(20px);
-            padding: 30px 20px; border-radius: 25px; border: 2px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 0 40px rgba(0,0,0,0.5); width: 90%; max-width: 550px; text-align: center; color: white;
-            position: relative;
-        }
-        .btn-close-cinema {
-            position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.2);
-            border: none; color: white; font-size: 1.2rem; width: 35px; height: 35px;
-            border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
-        }
-        .cinema-status { font-size: 0.9rem; letter-spacing: 4px; text-transform: uppercase; font-weight: 800; text-shadow: 0 0 10px rgba(255,255,255,0.6); margin-bottom: 15px; }
-        .cinema-name { font-size: 2.5rem; margin: 10px 0; font-weight: 800; text-shadow: 0 0 20px rgba(255,255,255,0.4); word-wrap: break-word; }
-        .cinema-service { font-size: 1.1rem; color: #00ffff; font-weight: bold; background: rgba(255,255,255,0.1); padding: 6px 20px; border-radius: 50px; display: inline-block; margin-bottom: 20px; border: 1px solid rgba(0,213,255,0.3); text-shadow: 0 0 8px rgba(0,255,255,0.5); }
-        .cinema-req { font-style: italic; color: #cbd5e1; font-size: 0.95rem; margin-top: 20px; line-height: 1.4; }
-
-        .progress-container { width: 100%; background: rgba(0, 0, 0, 0.4); height: 26px; border-radius: 13px; margin: 20px auto; overflow: hidden; position: relative; border: 1px solid rgba(255, 255, 255, 0.2); }
-        .progress-bar { width: 100%; background: linear-gradient(90deg, #00f2fe, #4facfe); height: 100%; transition: width 1s linear; box-shadow: 0 0 10px #00f2fe; }
-        .time-display { position: absolute; width: 100%; top: 0; left: 0; line-height: 26px; font-size: 1.1rem; font-weight: bold; text-shadow: 0 0 5px #000; text-align: center; color: white; }
-
-        .control-btns { display: flex; justify-content: center; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
-        .btn-ctrl { border: none; padding: 10px 20px; font-size: 0.9rem; font-weight: bold; border-radius: 10px; cursor: pointer; transition: all 0.2s ease; text-transform: uppercase; letter-spacing: 1px; }
-        
-        .btn-start { background-color: #10b981; color: white; }
-        .btn-start:disabled { background-color: #475569; color: #94a3b8; opacity: 0.4; cursor: not-allowed; }
-        .btn-stop { background-color: #f59e0b; color: white; }
-        .btn-stop:disabled { background-color: #475569; color: #94a3b8; opacity: 0.4; cursor: not-allowed; }
-        .btn-finish { background: linear-gradient(90deg, #00f2fe 0%, #4facfe 100%); color: white; }
+        .btn-action { border: none; background: none; cursor: pointer; font-size: 1.1rem; margin-right: 5px; }
+        .btn-action:hover { transform: scale(1.2); }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <button class="theme-toggle-btn" id="themeToggle" onclick="toggleTheme()">🌙 Chế độ tối</button>
+    
     <header>
         <h1>☁️ SKY UBER SERVICES ☁️</h1>
         <p>Hành trình chữa lành và những chuyến bay vạn dặm</p>
     </header>
 
-    <!-- FORM NHẬP ĐƠN -->
     <div class="form-section">
         <form id="orderForm">
             <div class="form-grid">
@@ -147,7 +135,6 @@
         </form>
     </div>
 
-    <!-- DANH SÁCH ĐƠN -->
     <div class="list-section">
         <div class="filter-bar">
             <button class="filter-btn active" onclick="filterOrders('all')">Tất Cả</button>
@@ -176,48 +163,42 @@
     </div>
 </div>
 
-<!-- ==================== KHU VỰC MÀN HÌNH TREO MÁY TRÊN CÙNG MỘT TRANG ==================== -->
-<div class="cinema-overlay rgb-mode-pause" id="cinemaOverlay">
-    <div class="cinema-card">
-        <button class="btn-close-cinema" onclick="closeCinema()">✕</button>
-        <div class="cinema-status" id="cinemaStatusText">⏸️ ĐANG TRONG TRẠNG THÁI CHỜ</div>
-        <div class="cinema-name" id="cinemaCustomerName">Tên Khách Hàng</div>
-        <div class="cinema-service" id="cinemaServiceName">Tên Dịch Vụ</div>
-        
-        <div class="progress-container">
-            <div class="progress-bar" id="cinemaProgress"></div>
-            <div class="time-display" id="timeDisplay">60:00</div>
-        </div>
-        
-        <div class="control-btns">
-            <button class="btn-ctrl btn-start" id="btnStart" onclick="startTimer()">▶ START</button>
-            <button class="btn-ctrl btn-stop" id="btnStop" onclick="pauseTimer()" disabled>⏸ PAUSE</button>
-            <button class="btn-ctrl btn-finish" id="btnFinish" onclick="finishEarly()">✅ HOÀN THÀNH SỚM</button>
-        </div>
-        
-        <div class="cinema-req" id="cinemaRequirements">Yêu cầu đơn hàng</div>
-    </div>
-</div>
-
 <script>
     let orders = JSON.parse(localStorage.getItem('skyUberOrders')) || [];
     let currentFilter = 'all';
 
-    // Biến quản lý đếm ngược chung
-    let countdownInterval;
-    let totalSeconds = 3600;
-    let remainingSeconds = totalSeconds;
-    let timerRunning = false;
-    let activeOrderIndex = null;
+    let currentTheme = localStorage.getItem('skyUberTheme') || 'light';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    updateThemeButtonText();
 
     const now = new Date();
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
     document.getElementById('startTime').value = now.toISOString().slice(0,16);
 
+    function toggleTheme() {
+        currentTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        localStorage.setItem('skyUberTheme', currentTheme);
+        updateThemeButtonText();
+    }
+
+    function updateThemeButtonText() {
+        const btn = document.getElementById('themeToggle');
+        btn.innerHTML = currentTheme === 'dark' ? '☀️ Chế độ sáng' : '🌙 Chế độ tối';
+    }
+
     function saveData() {
         localStorage.setItem('skyUberOrders', JSON.stringify(orders));
         renderOrders();
     }
+
+    // Đồng bộ thời gian thực từ LocalStorage khi tab Cinema thay đổi dữ liệu
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'skyUberOrders') {
+            orders = JSON.parse(e.newValue) || [];
+            renderOrders();
+        }
+    });
 
     function formatDateTime(dateTimeStr) {
         const d = new Date(dateTimeStr);
@@ -239,7 +220,7 @@
 
             if (order.status === 'Đang chạy') {
                 statusClass = 'status-running';
-                cinemaBtn = `<button class="btn-action" onclick="openCinemaModal(${actualIndex})" title="Mở màn hình treo máy">📺</button>`;
+                cinemaBtn = `<button class="btn-action" onclick="openCinemaInNewTab(${actualIndex})" title="Mở màn hình treo máy ở tab mới">📺</button>`;
             }
             if (order.status === 'Đã xong') statusClass = 'status-done';
 
@@ -248,7 +229,7 @@
                 <td style="font-weight:600;">${order.customerName}</td>
                 <td>${order.serviceName}</td>
                 <td style="font-size:0.85rem;">${formatDateTime(order.startTime)}</td>
-                <td style="font-size:0.85rem; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${order.requirements || '-'}</td>
+                <td style="font-size:0.85rem; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${order.requirements || '-'}</td>
                 <td style="font-weight:bold; color:#e056fd;">${order.totalHearts} 💖</td>
                 <td><span class="status-badge ${statusClass}">${order.status}</span></td>
                 <td>
@@ -285,11 +266,7 @@
     }
 
     function deleteOrder(index) {
-        if(confirm("Xóa chuyến xe này chứ?")) { 
-            orders.splice(index, 1); 
-            if(activeOrderIndex === index) { closeCinema(); }
-            saveData(); 
-        }
+        if(confirm("Xóa chuyến xe này chứ?")) { orders.splice(index, 1); saveData(); }
     }
 
     function filterOrders(filterType) {
@@ -299,102 +276,166 @@
         renderOrders();
     }
 
-    // ==================== CÁC HÀM ĐIỀU KHIỂN TREO MÁY TRÊN ĐIỆN THOẠI ====================
-    function openCinemaModal(index) {
-        // Nếu chọn đơn mới hoàn toàn, reset lại bộ đếm giờ
-        if (activeOrderIndex !== index) {
-            clearInterval(countdownInterval);
-            remainingSeconds = totalSeconds;
-            timerRunning = false;
-            activeOrderIndex = index;
-            
-            // Cập nhật nút bấm về trạng thái ban đầu
-            document.getElementById('btnStart').disabled = false;
-            document.getElementById('btnStop').disabled = true;
-            document.getElementById('btnFinish').disabled = false;
-            document.getElementById('cinemaOverlay').className = 'cinema-overlay rgb-mode-pause';
-            document.getElementById('cinemaStatusText').innerText = '⏸️ ĐANG TRONG TRẠNG THÁI CHỜ';
-            document.getElementById('timeDisplay').innerText = '60:00';
-            document.getElementById('cinemaProgress').style.width = '100%';
-        }
-
+    // ⚡ GIẢI PHÁP ĐỘC QUYỀN: Mã hóa HTML sang DataURL sửa triệt để lỗi đơ nút bấm trên các trình duyệt
+    function openCinemaInNewTab(index) {
         const order = orders[index];
-        document.getElementById('cinemaCustomerName').innerText = order.customerName;
-        document.getElementById('cinemaServiceName').innerText = order.serviceName;
-        document.getElementById('cinemaRequirements').innerText = order.requirements ? `“ Yêu cầu: ${order.requirements} ”` : "“ Không có yêu cầu đặc biệt ”";
+        const reqText = order.requirements ? `“ Yêu cầu: ${order.requirements} ”` : "“ Không có yêu cầu đặc biệt ”";
         
-        // Hiện màn hình treo máy phủ kín màn hình
-        document.getElementById('cinemaOverlay').style.display = 'flex';
-    }
+        const cinemaHtml = `<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Sky Uber - ${order.customerName} Hanging Mode</title>
+    <style>
+        :root { --card-bg: rgba(0, 0, 0, 0.4); --card-border: rgba(255, 255, 255, 0.1); --text-main: #fff; --text-sub: #cbd5e1; }
+        [data-theme="light"] { --card-bg: rgba(255, 255, 255, 0.75); --card-border: rgba(0, 0, 0, 0.1); --text-main: #1e293b; --text-sub: #475569; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; display: flex; justify-content: center; align-items: center; color: var(--text-main); font-family: 'Segoe UI', sans-serif; background-size: 400% 400% !important; transition: all 0.5s ease; }
+        .rgb-mode-pause { background: linear-gradient(-45deg, #0f172a, #1e1b4b, #2e1065, #172554); animation: rgbPause 15s ease infinite; }
+        .rgb-mode-running { background: linear-gradient(-45deg, #ec4899, #8b5cf6, #3b82f6, #f43f5e); animation: rgbRunning 6s linear infinite; }
+        .rgb-mode-done { background: linear-gradient(-45deg, #059669, #10b981, #06b6d4, #0284c7); animation: rgbPause 8s ease infinite; }
+        [data-theme="light"].rgb-mode-pause { background: linear-gradient(-45deg, #f1f5f9, #e2e8f0, #cbd5e1); animation: rgbPause 15s ease infinite; }
+        [data-theme="light"].rgb-mode-running { background: linear-gradient(-45deg, #fed7aa, #fbcfe8, #bfdbfe, #bbf7d0); animation: rgbRunning 8s linear infinite; }
+        [data-theme="light"].rgb-mode-done { background: linear-gradient(-45deg, #ccfbf1, #99f6e4, #e0f2fe); animation: rgbPause 8s ease infinite; }
+        @keyframes rgbPause { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes rgbRunning { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .cinema-card { background: var(--card-bg); backdrop-filter: blur(20px); padding: 40px 60px; border-radius: 30px; border: 2px solid var(--card-border); box-shadow: 0 10px 40px rgba(0,0,0,0.15); max-width: 80%; width: 650px; text-align: center; transition: all 0.3s; position: relative; }
+        .theme-btn-cinema { position: absolute; top: 20px; right: 20px; background: rgba(128,128,128,0.15); border: 1px solid var(--card-border); color: var(--text-main); padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 0.8rem; font-weight: bold; }
+        .cinema-status { font-size: 1.1rem; letter-spacing: 6px; text-transform: uppercase; font-weight: 800; margin-bottom: 15px; }
+        .cinema-name { font-size: 3.5rem; margin: 10px 0; font-weight: 800; }
+        .cinema-service { font-size: 1.4rem; color: #00b4d8; font-weight: bold; background: rgba(0,180,216,0.1); padding: 6px 22px; border-radius: 50px; display: inline-block; margin-bottom: 25px; border: 1px solid rgba(0,180,216,0.2); }
+        [data-theme="dark"] .cinema-service { color: #00ffff; background: rgba(255,255,255,0.1); border-color: rgba(0,213,255,0.3); }
+        .cinema-req { font-style: italic; color: var(--text-sub); font-size: 1.1rem; margin-top: 25px; line-height: 1.5; }
+        .progress-container { width: 100%; background: rgba(0, 0, 0, 0.15); height: 26px; border-radius: 13px; margin: 20px auto; overflow: hidden; position: relative; border: 1px solid var(--card-border); }
+        [data-theme="dark"] .progress-container { background: rgba(0, 0, 0, 0.4); }
+        .progress-bar { width: 100%; background: linear-gradient(90deg, #00f2fe, #4facfe); height: 100%; transition: width 1s linear; }
+        .time-display { position: absolute; width: 100%; top: 0; left: 0; line-height: 26px; font-size: 1.1rem; font-weight: bold; text-align: center; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.6); }
+        .control-btns { display: flex; justify-content: center; gap: 15px; margin-top: 25px; flex-wrap: wrap; }
+        .btn-ctrl { border: none; padding: 12px 25px; font-size: 1rem; font-weight: bold; border-radius: 10px; cursor: pointer; transition: all 0.2s ease; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-start { background-color: #10b981; color: white; box-shadow: 0 4px 12px rgba(16,185,129,0.3); }
+        .btn-start:hover:not(:disabled) { background-color: #059669; transform: scale(1.03); }
+        .btn-start:disabled { background-color: #94a3b8; color: #cbd5e1; opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+        .btn-stop { background-color: #f59e0b; color: white; box-shadow: 0 4px 12px rgba(245,158,11,0.3); }
+        .btn-stop:hover:not(:disabled) { background-color: #d97706; transform: scale(1.03); }
+        .btn-stop:disabled { background-color: #94a3b8; opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+        .btn-finish { background: linear-gradient(90deg, #0284c7 0%, #0ea5e9 100%); color: white; box-shadow: 0 4px 12px rgba(14,165,233,0.3); }
+        .btn-finish:hover:not(:disabled) { transform: scale(1.03); }
+    </style>
+</head>
+<body class="rgb-mode-pause">
+    <div class="cinema-card">
+        <button class="theme-btn-cinema" id="cinemaThemeBtn">🌙 Mode</button>
+        <div class="cinema-status" id="cinemaStatusText">⏸️ ĐANG TRONG TRẠNG THÁI CHỜ</div>
+        <div class="cinema-name">${order.customerName}</div>
+        <div class="cinema-service">${order.serviceName}</div>
+        <div class="progress-container">
+            <div class="progress-bar" id="cinemaProgress"></div>
+            <div class="time-display" id="timeDisplay">60:00</div>
+        </div>
+        <div class="control-btns">
+            <button class="btn-ctrl btn-start" id="btnStart">▶ START</button>
+            <button class="btn-ctrl btn-stop" id="btnStop" disabled>⏸ PAUSE</button>
+            <button class="btn-ctrl btn-finish" id="btnFinish">✅ HOÀN THÀNH SỚM</button>
+        </div>
+        <div class="cinema-req">${reqText}</div>
+    </div>
+    <script>
+        let countdownInterval;
+        const totalSeconds = 3600;
+        let remainingSeconds = totalSeconds;
+        let timerRunning = false;
+        const orderIndex = ${index};
 
-    function closeCinema() {
-        // Chỉ ẩn màn hình đi để người dùng thao tác danh sách đơn khác, thời gian vẫn tiếp tục chạy ngầm!
-        document.getElementById('cinemaOverlay').style.display = 'none';
-    }
+        let currentTheme = localStorage.getItem('skyUberTheme') || 'light';
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        updateToggleText();
 
-    function startTimer() {
-        if (timerRunning) return;
-        timerRunning = true;
-        document.getElementById('cinemaOverlay').className = 'cinema-overlay rgb-mode-running';
-        document.getElementById('cinemaStatusText').innerText = '🚀 CHUYẾN BAY ĐANG BẮT ĐẦU 🚀';
-        document.getElementById('btnStart').disabled = true;
-        document.getElementById('btnStop').disabled = false;
+        const btnStart = document.getElementById('btnStart');
+        const btnStop = document.getElementById('btnStop');
+        const btnFinish = document.getElementById('btnFinish');
+        const statusText = document.getElementById('cinemaStatusText');
+        const progress = document.getElementById('cinemaProgress');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const themeBtn = document.getElementById('cinemaThemeBtn');
 
-        countdownInterval = setInterval(() => {
-            remainingSeconds--;
-            
-            let mins = Math.floor(remainingSeconds / 60);
-            let secs = remainingSeconds % 60;
-            document.getElementById('timeDisplay').innerText = mins.toString().padStart(2, '0') + ':' + secs.toString().padStart(2, '0');
-            document.getElementById('cinemaProgress').style.width = ((remainingSeconds / totalSeconds) * 100) + '%';
+        themeBtn.addEventListener('click', () => {
+            currentTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            localStorage.setItem('skyUberTheme', currentTheme);
+            updateToggleText();
+        });
 
-            if (remainingSeconds <= 0) {
-                clearInterval(countdownInterval);
-                timerRunning = false;
-                document.getElementById('cinemaOverlay').className = 'cinema-overlay rgb-mode-done';
-                document.getElementById('cinemaStatusText').innerText = '🎉 CHUYẾN ĐI ĐÃ HOÀN THÀNH XUẤT SẮC 🎉';
-                document.getElementById('btnStop').disabled = true;
-                document.getElementById('btnFinish').disabled = true;
-                
-                // Đồng bộ cập nhật trạng thái đơn thành Đã Xong luôn
-                if(activeOrderIndex !== null && orders[activeOrderIndex]) {
-                    orders[activeOrderIndex].status = 'Đã xong';
-                    saveData();
-                }
-            }
-        }, 1000);
-    }
-
-    function pauseTimer() {
-        if (!timerRunning) return;
-        timerRunning = false;
-        clearInterval(countdownInterval);
-        document.getElementById('cinemaOverlay').className = 'cinema-overlay rgb-mode-pause';
-        document.getElementById('cinemaStatusText').innerText = '⏸️ HÀNH TRÌNH ĐANG TẠM DỪNG';
-        document.getElementById('btnStart').disabled = false;
-        document.getElementById('btnStop').disabled = true;
-    }
-
-    function finishEarly() {
-        clearInterval(countdownInterval);
-        timerRunning = false;
-        remainingSeconds = 0;
-        
-        document.getElementById('cinemaOverlay').className = 'cinema-overlay rgb-mode-done';
-        document.getElementById('cinemaStatusText').innerText = '🎉 CHUYẾN ĐI ĐÃ HOÀN THÀNH XUẤT SẮC 🎉';
-        
-        document.getElementById('timeDisplay').innerText = '00:00';
-        document.getElementById('cinemaProgress').style.width = '0%';
-        
-        document.getElementById('btnStart').disabled = true;
-        document.getElementById('btnStop').disabled = true;
-        document.getElementById('btnFinish').disabled = true;
-
-        // Cập nhật tức thì trạng thái sang "Đã xong" ở bảng quản lý
-        if(activeOrderIndex !== null && orders[activeOrderIndex]) {
-            orders[activeOrderIndex].status = 'Đã xong';
-            saveData();
+        function updateToggleText() {
+            themeBtn.innerText = currentTheme === 'dark' ? '☀️ Sáng' : '🌙 Tối';
         }
+
+        function syncStatusToManager(status) {
+            let currentOrders = JSON.parse(localStorage.getItem('skyUberOrders')) || [];
+            if(currentOrders[orderIndex]) {
+                currentOrders[orderIndex].status = status;
+                localStorage.setItem('skyUberOrders', JSON.stringify(currentOrders));
+            }
+        }
+
+        btnStart.addEventListener('click', () => {
+            if (timerRunning) return;
+            timerRunning = true;
+            document.body.className = 'rgb-mode-running';
+            statusText.innerText = '🚀 CHUYẾN BAY ĐANG BẮT ĐẦU 🚀';
+            btnStart.disabled = true;
+            btnStop.disabled = false;
+
+            countdownInterval = setInterval(() => {
+                remainingSeconds--;
+                let mins = Math.floor(remainingSeconds / 60);
+                let secs = remainingSeconds % 60;
+                timeDisplay.innerText = mins.toString().padStart(2, '0') + ':' + secs.toString().padStart(2, '0');
+                progress.style.width = ((remainingSeconds / totalSeconds) * 100) + '%';
+
+                if (remainingSeconds <= 0) {
+                    clearInterval(countdownInterval);
+                    timerRunning = false;
+                    document.body.className = 'rgb-mode-done';
+                    statusText.innerText = '🎉 CHUYẾN ĐI ĐÃ HOÀN THÀNH XUẤT SẮC 🎉';
+                    btnStop.disabled = true;
+                    btnFinish.disabled = true;
+                    syncStatusToManager('Đã xong');
+                }
+            }, 1000);
+        });
+
+        btnStop.addEventListener('click', () => {
+            if (!timerRunning) return;
+            timerRunning = false;
+            clearInterval(countdownInterval);
+            document.body.className = 'rgb-mode-pause';
+            statusText.innerText = '⏸️ HÀNH TRÌNH ĐANG TẠM DỪNG';
+            btnStart.disabled = false;
+            btnStop.disabled = true;
+        });
+
+        btnFinish.addEventListener('click', () => {
+            clearInterval(countdownInterval);
+            timerRunning = false;
+            remainingSeconds = 0;
+            document.body.className = 'rgb-mode-done';
+            statusText.innerText = '🎉 CHUYẾN ĐI ĐÃ HOÀN THÀNH XUẤT SẮC 🎉';
+            timeDisplay.innerText = '00:00';
+            progress.style.width = '0%';
+            btnStart.disabled = true;
+            btnStop.disabled = true;
+            btnFinish.disabled = true;
+            syncStatusToManager('Đã xong');
+        });
+    <\/script>
+</body>
+</html>`;
+
+        // Mã hóa chuỗi HTML thành dạng base64 an toàn cho trình duyệt
+        const blob = new Blob([cinemaHtml], { type: 'text/html;charset=utf-8' });
+        const blobUrl = URL.createObjectURL(blob);
+        
+        // Mở tab mới chạy độc lập không sợ bị đơ script
+        window.open(blobUrl, '_blank');
     }
 
     renderOrders();
