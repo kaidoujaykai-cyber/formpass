@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sky: Children of the Light - Uber Manager</title>
+    <title>Uber Manager</title>
     <style>
         :root {
             --sky-bg: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
@@ -274,10 +274,10 @@
                     <label for="serviceName">🕯️ Tên Dịch Vụ</label>
                     <select id="serviceName" required>
                         <option value="Full Vạch + Quests">Full Vạch + Quests</option>
+                        <option value="18 Nến + Quests">18 Nến + Quests</option>
                         <option value="Xám nến + Quests">Xám nến + Quests</option>
                         <option value="Nhặt wl">Nhặt wl</option>
                         <option value="Eden Reborn">Eden Reborn</option>
-                        <option value="18 Nến + Quests">18 Nến + Quests</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -339,7 +339,7 @@
                 </thead>
                 <tbody id="orderTableBody"></tbody>
             </table>
-            <div id="emptyMessage" style="text-align: center; padding: 20px; display: none; color: grey;">Chưa có chuyến xe nào... ✨</div>
+            <div id="emptyMessage" style="text-align: center; padding: 20px; display: none; color: grey;">Chưa có đơn nào... ✨</div>
         </div>
     </div>
 </div>
@@ -361,7 +361,7 @@
         <div class="cinema-service" id="cinemaServiceName">Tên Dịch Vụ</div>
         
         <div class="cinema-quests-container" id="cinemaQuestsArea" style="display: none;">
-            <div class="cinema-quests-header">🎯 Mức độ hoàn thành Daily Quests</div>
+            <div class="cinema-quests-header">🎯Daily Quests</div>
             <div id="cinemaQuestsList"></div>
         </div>
 
