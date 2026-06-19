@@ -11,6 +11,7 @@
             --text-color: #3e5263;
             --accent-color: #6da2db;
             --edit-color: #f39c12;
+            --kpi-gradient: linear-gradient(90deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
         }
 
         * { box-sizing: border-box; }
@@ -43,10 +44,90 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
-        /* ==================== KPI SECTION ==================== */
+        /* ==================== PROGRESS KPI SECTION ==================== */
+        .kpi-progress-container {
+            background: var(--panel-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 20px;
+            padding: 20px;
+            width: 100%;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.06);
+        }
+        
+        .kpi-progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-weight: bold;
+        }
+
+        .kpi-progress-title {
+            font-size: 1.1rem;
+            color: #4a6a8a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .kpi-progress-text {
+            font-size: 1.2rem;
+            color: #e056fd; /* Màu tím nổi bật */
+            font-weight: 800;
+        }
+
+        .kpi-progress-track {
+    width: 100%;
+    height: 24px;
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden; /* Cắt gọn, không cho tràn */
+}
+
+/* Thanh chứa màu nền (thanh có màu tím/xanh) */
+.kpi-progress-fill {
+    height: 100%;
+    width: 0%; /* Động theo % đơn hàng */
+    border-radius: 12px;
+    transition: width 0.8s ease, background-color 0.8s ease;
+    position: relative;
+    overflow: hidden; /* QUAN TRỌNG: Cắt dải sáng ngay tại đây */
+    background-color: #e056fd; /* Màu mặc định */
+}
+
+/* Lớp ánh sáng */
+.kpi-progress-fill::after {
+    content: "";
+    position: absolute;
+    top: 0; 
+    left: 0;
+    width: 100%; 
+    height: 100%;
+    /* Dải sáng trắng chạy từ trái sang phải */
+    background: linear-gradient(
+        90deg, 
+        transparent 0%, 
+        rgba(255, 255, 255, 0.4) 50%, 
+        transparent 100%
+    );
+    /* Tốc độ ánh sáng chạy */
+    animation: shimmer 4s infinite linear;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+        /* ==================== 5 KPI CARDS SECTION ==================== */
         .kpi-section {
             display: flex;
-            gap: 12px;
+            gap: 15px;
             width: 100%;
             margin-bottom: 20px;
             justify-content: space-between;
@@ -60,7 +141,7 @@
             border-radius: 20px;
             padding: 15px 10px;
             flex: 1;
-            min-width: 110px;
+            min-width: 130px;
             text-align: center;
             box-shadow: 0 8px 32px rgba(31, 38, 135, 0.06);
             display: flex;
@@ -81,19 +162,19 @@
         }
 
         .kpi-label {
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             font-weight: 600;
             color: #5a738e;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
         }
 
         .kpi-card.waiting .kpi-value { color: #e67e22; }
         .kpi-card.running .kpi-value { color: #3498db; }
         .kpi-card.done .kpi-value { color: #10b981; }
         .kpi-card.hearts .kpi-value { color: #e056fd; }
-        .kpi-card.target .kpi-value { color: #f39c12; }
 
+        /* Các thành phần còn lại giữ nguyên */
         .form-section, .list-section {
             background: var(--panel-bg); backdrop-filter: blur(10px); padding: 20px;
             border-radius: 25px; box-shadow: 0 8px 32px rgba(31, 38, 135, 0.06);
@@ -140,6 +221,8 @@
             .form-grid { grid-template-columns: 1fr; }
             .grid-span-2 { grid-column: 1 / -1; }
             .form-section, .list-section { padding: 15px; border-radius: 18px; }
+            .kpi-section { gap: 10px; }
+            .kpi-card { min-width: 100px; }
         }
         @media (max-width: 768px) {
             table, thead, tbody, th, td, tr { display: block; }
@@ -210,11 +293,17 @@
         <div class="realtime-clock-main" id="realtimeClockMain">00:00:00</div>
     </header>
 
-    <div class="kpi-section">
-        <div class="kpi-card target">
-            <div class="kpi-value" id="kpiTarget">0/5</div>
-            <div class="kpi-label">🎯 Mục Tiêu KPI</div>
+    <div class="kpi-progress-container">
+        <div class="kpi-progress-header">
+            <div class="kpi-progress-title">🔥 Daily KPI Target</div>
+            <div class="kpi-progress-text" id="kpiTargetText">0 / 5 Đơn</div>
         </div>
+        <div class="kpi-progress-track">
+            <div class="kpi-progress-fill" id="kpiProgressFill"></div>
+        </div>
+    </div>
+
+    <div class="kpi-section">
         <div class="kpi-card">
             <div class="kpi-value" id="kpiTotal">0</div>
             <div class="kpi-label">📦 Tổng Đơn</div>
@@ -370,6 +459,8 @@
     let timerRunning = false;
     let activeOrderIndex = null;
 
+    const kpiTargetValue = 5; // Mục tiêu KPI là 5 đơn
+
     const now = new Date();
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
     document.getElementById('startTime').value = now.toISOString().slice(0,16);
@@ -397,27 +488,29 @@
         return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth()+1).toString().padStart(2, '0')} - ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
     }
 
-    // --- HÀM TÍNH TOÁN KPI ---
-    function updateKPI() {
-        const totalOrders = orders.length;
-        const waitingOrders = orders.filter(o => o.status === 'Đang đợi').length;
-        const runningOrders = orders.filter(o => o.status === 'Đang chạy').length;
-        const doneOrders = orders.filter(o => o.status === 'Đã xong').length;
-        
-        let earnedHearts = 0;
-        orders.forEach(o => {
-            if (o.status === 'Đã xong') {
-                earnedHearts += parseInt(o.totalHearts) || 0;
-            }
-        });
+    // --- HÀM TÍNH TOÁN VÀ CẬP NHẬT KPI ---
+function updateKPI() {
+        // 1. Tính toán số liệu
+        const total = orders.length;
+        const waiting = orders.filter(o => o.status === 'Đang đợi').length;
+        const running = orders.filter(o => o.status === 'Đang chạy').length;
+        const done = orders.filter(o => o.status === 'Đã xong').length;
+        const hearts = orders.filter(o => o.status === 'Đã xong').reduce((sum, o) => sum + (parseInt(o.totalHearts) || 0), 0);
 
-        // 1 đơn hoàn thành tính là 1 KPI, giới hạn hiển thị là / 5
-        document.getElementById('kpiTarget').innerText = `${doneOrders}/5`;
-        document.getElementById('kpiTotal').innerText = totalOrders;
-        document.getElementById('kpiWaiting').innerText = waitingOrders;
-        document.getElementById('kpiRunning').innerText = runningOrders;
-        document.getElementById('kpiDone').innerText = doneOrders;
-        document.getElementById('kpiHearts').innerText = earnedHearts;
+        // 2. Cập nhật các ô số
+        document.getElementById('kpiTotal').innerText = total;
+        document.getElementById('kpiWaiting').innerText = waiting;
+        document.getElementById('kpiRunning').innerText = running;
+        document.getElementById('kpiDone').innerText = done;
+        document.getElementById('kpiHearts').innerText = hearts;
+
+        // 3. Cập nhật thanh tiến độ
+        const fill = document.getElementById('kpiProgressFill');
+        const percent = Math.min((done / kpiTargetValue) * 100, 100);
+        
+        fill.style.width = `${percent}%`;
+        fill.style.backgroundColor = `color-mix(in srgb, #e056fd ${100 - percent}%, #10b981 ${percent}%)`;
+        document.getElementById('kpiTargetText').innerText = `${done} / ${kpiTargetValue} Đơn`;
     }
 
     function renderOrders() {
