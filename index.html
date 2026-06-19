@@ -3,18 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Uber Manager</title>
+    <title>Sky Uber Manager Pro v4.0</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         :root {
             --sky-bg: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
-            --panel-bg: rgba(255, 255, 255, 0.75);
+            --panel-bg: rgba(255, 255, 255, 0.78);
             --text-color: #3e5263;
             --accent-color: #6da2db;
             --edit-color: #f39c12;
-            --kpi-gradient: linear-gradient(90deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+            --border-color: rgba(255, 255, 255, 0.5);
+            --card-hover: translateY(-5px);
         }
 
-        * { box-sizing: border-box; }
+        [data-theme="dark"] {
+            --sky-bg: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            --panel-bg: rgba(30, 41, 59, 0.75);
+            --text-color: #f1f5f9;
+            --accent-color: #38bdf8;
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        * { box-sizing: border-box; transition: background 0.3s ease, color 0.3s ease; }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -26,176 +36,133 @@
 
         .container { width: 100%; max-width: 1200px; }
         
-        header { text-align: center; margin-bottom: 20px; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        header h1 { margin: 0; font-size: 2.2rem; color: #fff; letter-spacing: 2px; }
+        header { text-align: center; margin-bottom: 20px; position: relative; }
+        header h1 { margin: 0; font-size: 2.2rem; color: #fff; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        [data-theme="dark"] header h1 { color: #38bdf8; }
         header p { margin: 5px 0 0 0; color: #52799f; font-style: italic; font-size: 0.9rem; }
+        [data-theme="dark"] header p { color: #94a3b8; }
         
+        .theme-toggle {
+            position: absolute; top: 10px; right: 10px;
+            background: rgba(255,255,255,0.3); border: none; padding: 8px 12px;
+            border-radius: 20px; cursor: pointer; font-weight: bold; color: inherit;
+        }
+
         .realtime-clock-main {
-            margin-top: 8px;
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: #4a6a8a;
-            background: rgba(255, 255, 255, 0.4);
-            padding: 4px 15px;
-            border-radius: 20px;
-            display: inline-block;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            margin-top: 8px; font-size: 1.1rem; font-weight: 700; color: #4a6a8a;
+            background: rgba(255, 255, 255, 0.4); padding: 4px 15px; border-radius: 20px;
+            display: inline-block; backdrop-filter: blur(5px); border: 1px solid var(--border-color);
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
+        [data-theme="dark"] .realtime-clock-main { color: #38bdf8; background: rgba(0,0,0,0.2); }
+
+        /* ==================== MONTH SELECTION TABS ==================== */
+        .month-tabs-container {
+            width: 100%; margin-bottom: 15px; display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px;
+        }
+        .month-tab {
+            background: rgba(255, 255, 255, 0.5); border: 1px solid var(--border-color); padding: 10px 18px;
+            border-radius: 15px; cursor: pointer; font-weight: bold; color: inherit; white-space: nowrap; font-size: 0.9rem;
+        }
+        [data-theme="dark"] .month-tab { background: rgba(0,0,0,0.2); }
+        .month-tab.active, .month-tab:hover { background: #e056fd; color: #fff; border-color: #e056fd; }
 
         /* ==================== PROGRESS KPI SECTION ==================== */
         .kpi-progress-container {
-            background: var(--panel-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            border-radius: 20px;
-            padding: 20px;
-            width: 100%;
-            margin-bottom: 20px;
+            background: var(--panel-bg); backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color); border-radius: 20px;
+            padding: 20px; width: 100%; margin-bottom: 20px;
             box-shadow: 0 8px 32px rgba(31, 38, 135, 0.06);
         }
-        
-        .kpi-progress-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            font-weight: bold;
+        .kpi-progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-weight: bold; }
+        .kpi-progress-title { font-size: 1.1rem; color: #4a6a8a; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 1px; }
+        [data-theme="dark"] .kpi-progress-title { color: #94a3b8; }
+        .kpi-progress-text { font-size: 1.2rem; color: #e056fd; font-weight: 800; }
+
+        .kpi-progress-track { width: 100%; height: 24px; background: rgba(0, 0, 0, 0.08); border-radius: 12px; position: relative; overflow: hidden; }
+        [data-theme="dark"] .kpi-progress-track { background: rgba(255,255,255,0.1); }
+        .kpi-progress-fill { height: 100%; width: 0%; border-radius: 12px; transition: width 0.5s ease, background-color 0.5s ease; position: relative; overflow: hidden; background-color: #e056fd; }
+        .kpi-progress-fill::after {
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.4) 50%, transparent 100%);
+            animation: shimmer 4s infinite linear;
         }
 
-        .kpi-progress-title {
-            font-size: 1.1rem;
-            color: #4a6a8a;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+        @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
 
-        .kpi-progress-text {
-            font-size: 1.2rem;
-            color: #e056fd; /* Màu tím nổi bật */
-            font-weight: 800;
-        }
-
-        .kpi-progress-track {
-    width: 100%;
-    height: 24px;
-    background: rgba(0, 0, 0, 0.08);
-    border-radius: 12px;
-    position: relative;
-    overflow: hidden; /* Cắt gọn, không cho tràn */
-}
-
-/* Thanh chứa màu nền (thanh có màu tím/xanh) */
-.kpi-progress-fill {
-    height: 100%;
-    width: 0%; /* Động theo % đơn hàng */
-    border-radius: 12px;
-    transition: width 0.8s ease, background-color 0.8s ease;
-    position: relative;
-    overflow: hidden; /* QUAN TRỌNG: Cắt dải sáng ngay tại đây */
-    background-color: #e056fd; /* Màu mặc định */
-}
-
-/* Lớp ánh sáng */
-.kpi-progress-fill::after {
-    content: "";
-    position: absolute;
-    top: 0; 
-    left: 0;
-    width: 100%; 
-    height: 100%;
-    /* Dải sáng trắng chạy từ trái sang phải */
-    background: linear-gradient(
-        90deg, 
-        transparent 0%, 
-        rgba(255, 255, 255, 0.4) 50%, 
-        transparent 100%
-    );
-    /* Tốc độ ánh sáng chạy */
-    animation: shimmer 4s infinite linear;
-}
-
-@keyframes shimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-}
-
-        /* ==================== 5 KPI CARDS SECTION ==================== */
-        .kpi-section {
-            display: flex;
-            gap: 15px;
-            width: 100%;
-            margin-bottom: 20px;
-            justify-content: space-between;
-            flex-wrap: wrap;
-        }
-
+        /* ==================== 6 KPI CARDS SECTION ==================== */
+        .kpi-section { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; width: 100%; margin-bottom: 20px; }
         .kpi-card {
-            background: var(--panel-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            border-radius: 20px;
-            padding: 15px 10px;
-            flex: 1;
-            min-width: 130px;
-            text-align: center;
-            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.06);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.3s ease;
+            background: var(--panel-bg); backdrop-filter: blur(10px); border: 1px solid var(--border-color);
+            border-radius: 20px; padding: 15px 10px; text-align: center;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.06); display: flex; flex-direction: column;
+            align-items: center; justify-content: center; transition: transform 0.3s ease;
         }
-
-        .kpi-card:hover { transform: translateY(-5px); }
-
-        .kpi-value {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: var(--accent-color);
-            margin-bottom: 5px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .kpi-label {
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: #5a738e;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
+        .kpi-card:hover { transform: var(--card-hover); }
+        .kpi-value { font-size: 1.8rem; font-weight: 800; color: var(--accent-color); margin-bottom: 5px; }
+        .kpi-label { font-size: 0.8rem; font-weight: 600; color: #5a738e; text-transform: uppercase; letter-spacing: 1px; }
+        [data-theme="dark"] .kpi-label { color: #94a3b8; }
         .kpi-card.waiting .kpi-value { color: #e67e22; }
         .kpi-card.running .kpi-value { color: #3498db; }
         .kpi-card.done .kpi-value { color: #10b981; }
+        .kpi-card.cancel .kpi-value { color: #e74c3c; }
         .kpi-card.hearts .kpi-value { color: #e056fd; }
 
-        /* Các thành phần còn lại giữ nguyên */
-        .form-section, .list-section {
+        /* Form Toggle & Sections */
+        .toggle-form-container { width: 100%; margin-bottom: 15px; text-align: center; }
+        .btn-toggle-form {
+            background: #e056fd; color: white; border: none; padding: 12px 30px;
+            border-radius: 50px; font-size: 1.05rem; font-weight: bold; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(224, 86, 253, 0.3); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-toggle-form:hover { transform: scale(1.03); background: #be39db; }
+
+        /* ==================== ĐÃ THAY ĐỔI: HIỆU ỨNG CO GIÃN TẠI ĐÂY ==================== */
+        .form-section {
             background: var(--panel-bg); backdrop-filter: blur(10px); padding: 20px;
             border-radius: 25px; box-shadow: 0 8px 32px rgba(31, 38, 135, 0.06);
-            margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.5);
-            width: 100%;
+            margin-bottom: 20px; border: 1px solid var(--border-color); width: 100%;
+            
+            /* Cấu hình trạng thái đóng mặc định (Thu nhỏ về 0, tâm co giãn ở phía trên cùng giữa) */
+            display: none; 
+            opacity: 0; 
+            transform: scale(0.6); 
+            transform-origin: top center;
+            
+            /* Sử dụng hàm cubic-bezier tạo độ nảy đàn hồi (elastic pop effect) */
+            transition: opacity 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                        transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .form-section.show { 
+            display: block; 
+            opacity: 1; 
+            transform: scale(1); 
         }
 
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
         .form-group { display: flex; flex-direction: column; width: 100%; }
-        .form-group label { font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; color: #4a637a; }
+        .form-group label { font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; color: inherit; opacity: 0.9; }
         .form-group input, .form-group select, .form-group textarea {
-            width: 100%; padding: 11px; border: 1px solid rgba(255, 255, 255, 0.7); border-radius: 12px;
-            background: rgba(255, 255, 255, 0.85); color: var(--text-color); font-size: 0.95rem; outline: none;
+            width: 100%; padding: 11px; border: 1px solid rgba(0,0,0,0.1); border-radius: 12px;
+            background: rgba(255, 255, 255, 0.9); color: #333; font-size: 0.95rem; outline: none;
+        }
+        [data-theme="dark"] .form-group input, [data-theme="dark"] .form-group select, [data-theme="dark"] .form-group textarea {
+            background: rgba(15, 23, 42, 0.8); color: #fff; border-color: rgba(255,255,255,0.1);
         }
         .grid-span-2 { grid-column: span 2; }
         .quests-grid {
             grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 12px; background: rgba(255, 255, 255, 0.4); padding: 15px; border-radius: 15px;
-            border: 1px dashed rgba(109, 162, 219, 0.5); margin-top: 5px;
+            gap: 12px; background: rgba(255, 255, 255, 0.2); padding: 15px; border-radius: 15px;
+            border: 1px dashed var(--accent-color); margin-top: 5px; position: relative;
         }
-        .quests-title { grid-column: 1 / -1; font-size: 0.95rem; font-weight: bold; color: #34495e; margin-bottom: -5px; display: flex; align-items: center; gap: 6px; }
+        [data-theme="dark"] .quests-grid { background: rgba(0,0,0,0.2); }
+        .quests-title { grid-column: 1 / -1; font-size: 0.95rem; font-weight: bold; margin-bottom: -5px; display: flex; justify-content: space-between; align-items: center;}
+        
+        .btn-quick-fill {
+            background: var(--accent-color); color: white; border: none; padding: 4px 10px;
+            border-radius: 8px; font-size: 0.75rem; cursor: pointer; font-weight: bold;
+        }
+
         .btn-submit {
             grid-column: 1 / -1; background: #fff; color: var(--accent-color); border: 2px solid var(--accent-color);
             padding: 12px; font-size: 1rem; font-weight: bold; border-radius: 12px; cursor: pointer; transition: all 0.3s; margin-top: 5px;
@@ -204,33 +171,72 @@
         .btn-submit.editing-mode { color: var(--edit-color); border-color: var(--edit-color); }
         .btn-submit.editing-mode:hover { background: var(--edit-color); color: #fff; }
 
-        .filter-bar { margin-bottom: 15px; display: flex; gap: 8px; flex-wrap: wrap; }
+        /* Filter and Sort Utility Controls */
+        .controls-wrapper { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; }
+        .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
         .filter-btn {
             background: rgba(255, 255, 255, 0.6); border: none; padding: 8px 14px; border-radius: 20px;
-            cursor: pointer; font-weight: 500; color: var(--text-color); transition: all 0.2s; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.4);
+            cursor: pointer; font-weight: 500; color: inherit; transition: all 0.2s; font-size: 0.85rem; border: 1px solid var(--border-color);
         }
+        [data-theme="dark"] .filter-btn { background: rgba(0,0,0,0.3); }
         .filter-btn.active, .filter-btn:hover { background: var(--accent-color); color: #fff; border-color: var(--accent-color); }
+        
+        .search-input {
+            padding: 8px 15px; border-radius: 20px; border: 1px solid var(--border-color);
+            background: rgba(255,255,255,0.6); color: inherit; font-size: 0.85rem; outline: none; width: 180px;
+        }
+        [data-theme="dark"] .search-input { background: rgba(0,0,0,0.3); }
+
+        .sort-select { padding: 8px 12px; border-radius: 20px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.6); color: inherit; font-size: 0.85rem; outline: none; cursor: pointer; }
+        [data-theme="dark"] .sort-select { background: rgba(0,0,0,0.3); }
+
+        .list-section, .backup-section {
+            background: var(--panel-bg); backdrop-filter: blur(10px); padding: 20px;
+            border-radius: 25px; box-shadow: 0 8px 32px rgba(31, 38, 135, 0.06);
+            margin-bottom: 20px; border: 1px solid var(--border-color); width: 100%;
+        }
+
         .table-container { width: 100%; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; text-align: left; }
         th, td { padding: 12px 14px; border-bottom: 1px solid rgba(0, 0, 0, 0.05); font-size: 0.95rem; }
-        th { background-color: rgba(109, 162, 219, 0.15); color: #34495e; font-weight: 600; }
-        .id-badge { font-size: 0.85rem; background: rgba(0,0,0,0.06); padding: 4px 10px; border-radius: 8px; color: #5a738e; display: inline-block; margin: 2px; font-family: inherit; font-weight: 600; }
+        [data-theme="dark"] th, [data-theme="dark"] td { border-bottom-color: rgba(255,255,255,0.05); }
+        th { background-color: rgba(109, 162, 219, 0.15); font-weight: 600; }
+        .id-badge { font-size: 0.85rem; background: rgba(0,0,0,0.06); padding: 4px 10px; border-radius: 8px; display: inline-block; margin: 2px; font-weight: 600; }
+        [data-theme="dark"] .id-badge { background: rgba(255,255,255,0.1); }
+
+        /* Đồng hồ chạy đồng bộ ở bảng ngoài */
+        .live-sync-timer {
+            display: inline-block; background: rgba(52, 152, 219, 0.15); color: #2980b9;
+            padding: 2px 6px; border-radius: 6px; font-weight: bold; font-family: monospace;
+            font-size: 0.85rem; margin-left: 6px; animation: pulseEffect 1.5s infinite;
+        }
+        [data-theme="dark"] .live-sync-timer { background: rgba(56, 189, 248, 0.2); color: #38bdf8; }
+        @keyframes pulseEffect { 0% {opacity: 1;} 50% {opacity: 0.6;} 100% {opacity: 1;} }
+
+        /* Backup Buttons Zone */
+        .backup-zone { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .btn-utility { background: rgba(255,255,255,0.5); border: 1px solid var(--border-color); padding: 8px 15px; border-radius: 12px; cursor: pointer; font-weight: 600; color: inherit; display: inline-flex; align-items: center; gap: 5px; }
+        [data-theme="dark"] .btn-utility { background: rgba(0,0,0,0.2); }
+        .btn-utility:hover { background: var(--accent-color); color: #fff; }
+        .btn-excel { border-color: #10b981; color: #10b981; }
+        .btn-excel:hover { background-color: #10b981 !important; color: white !important; }
 
         @media (max-width: 600px) {
             header h1 { font-size: 1.8rem; }
             .form-grid { grid-template-columns: 1fr; }
             .grid-span-2 { grid-column: 1 / -1; }
             .form-section, .list-section { padding: 15px; border-radius: 18px; }
-            .kpi-section { gap: 10px; }
-            .kpi-card { min-width: 100px; }
+            .controls-wrapper { flex-direction: column; align-items: flex-start; }
+            .search-input { width: 100%; }
         }
         @media (max-width: 768px) {
             table, thead, tbody, th, td, tr { display: block; }
             thead { display: none; }
-            tr { background: rgba(255, 255, 255, 0.4); border: 1px solid rgba(255,255,255,0.5); border-radius: 15px; padding: 12px; margin-bottom: 12px; }
+            tr { background: rgba(255, 255, 255, 0.4); border: 1px solid var(--border-color); border-radius: 15px; padding: 12px; margin-bottom: 12px; }
+            [data-theme="dark"] tr { background: rgba(0,0,0,0.15); }
             td { border: none; padding: 8px 0; display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px dashed rgba(0,0,0,0.05); text-align: right; }
             td:last-child { border: none; padding-top: 10px; }
-            td::before { content: attr(data-label); font-weight: bold; color: #4a637a; font-size: 0.9rem; padding-right: 15px; text-align: left; min-width: 110px; flex-shrink: 0; }
+            td::before { content: attr(data-label); font-weight: bold; font-size: 0.9rem; padding-right: 15px; text-align: left; min-width: 110px; flex-shrink: 0; }
             .wrap-text { word-break: break-word; overflow-wrap: break-word; white-space: normal; text-align: right; width: 100%; }
         }
 
@@ -238,25 +244,33 @@
         .status-waiting { background-color: #ffe3a8; color: #b06a00; }
         .status-running { background-color: #cfe2ff; color: #0a58ca; }
         .status-done { background-color: #d1e7dd; color: #0f5132; }
-        .action-group { display: flex; gap: 6px; align-items: center; justify-content: flex-end; width: 100%; flex-wrap: wrap; }
-        .btn-action { border: none; background: rgba(255,255,255,0.5); cursor: pointer; font-size: 1.05rem; padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; }
-        
-        .info-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 10000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
-        .info-overlay.active { opacity: 1; pointer-events: auto; }
-        .info-card { background: #fff; border-radius: 20px; width: 92%; max-width: 500px; padding: 22px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); position: relative; transform: scale(0.9); transition: transform 0.3s ease; color: var(--text-color); }
-        .info-overlay.active .info-card { transform: scale(1); }
-        .info-header { font-size: 1.25rem; font-weight: bold; margin-bottom: 15px; color: #2c3e50; border-bottom: 2px solid #ecf0f1; padding-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-        .info-body p { margin: 10px 0; font-size: 0.95rem; line-height: 1.5; border-bottom: 1px dashed rgba(0,0,0,0.05); padding-bottom: 6px; }
-        .info-body p strong { color: #4a637a; min-width: 120px; display: inline-block; }
-        .info-quests-title { font-weight: bold; margin-top: 15px; color: #2c3e50; font-size: 0.95rem; display: flex; align-items: center; gap: 5px; }
-        .info-quest-row { font-size: 0.9rem; padding: 4px 0; display: flex; align-items: center; gap: 8px; color: #555; }
+        .status-canceled { background-color: #f8d7da; color: #842029; }
 
-        .cinema-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 9999; background-size: 400% 400%; opacity: 0; pointer-events: none; transition: opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
-        .cinema-overlay.active { opacity: 1; pointer-events: auto; }
-        .cinema-overlay.rgb-mode-pause { background-image: linear-gradient(-45deg, #0f172a, #1e1b4b, #2e1065, #172554); animation: rgbMovement 12s ease infinite; }
-        .cinema-overlay.rgb-mode-running { background-image: linear-gradient(-45deg, #f43f5e, #ec4899, #8b5cf6, #3b82f6); animation: rgbMovement 6s linear infinite; }
-        .cinema-overlay.rgb-mode-done { background-image: linear-gradient(-45deg, #059669, #10b981, #06b6d4, #0284c7); animation: rgbMovement 8s ease infinite; }
-        @keyframes rgbMovement { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        .action-group { display: flex; gap: 6px; align-items: center; justify-content: flex-end; width: 100%; flex-wrap: wrap; }
+        .btn-action { border: none; background: rgba(255,255,255,0.5); cursor: pointer; font-size: 1.05rem; padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; color: inherit; }
+        [data-theme="dark"] .btn-action { background: rgba(255,255,255,0.1); }
+        
+        /* Modals Overlay Base */
+        .info-overlay, .cinema-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 10000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .info-overlay.active, .cinema-overlay.active { opacity: 1; pointer-events: auto; }
+        .info-card { background: var(--panel-bg); backdrop-filter: blur(15px); border: 1px solid var(--border-color); border-radius: 20px; width: 92%; max-width: 500px; padding: 22px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); position: relative; transform: scale(0.9); transition: transform 0.3s ease; color: var(--text-color); }
+        .info-overlay.active .info-card { transform: scale(1); }
+        .info-header { font-size: 1.25rem; font-weight: bold; margin-bottom: 15px; border-bottom: 2px solid var(--border-color); padding-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .info-body p { margin: 10px 0; font-size: 0.95rem; line-height: 1.5; border-bottom: 1px dashed rgba(0,0,0,0.05); padding-bottom: 6px; }
+        .info-body p strong { min-width: 120px; display: inline-block; opacity: 0.8; }
+        .info-quests-title { font-weight: bold; margin-top: 15px; font-size: 0.95rem; display: flex; align-items: center; gap: 5px; }
+        .info-quest-row { font-size: 0.9rem; padding: 4px 0; display: flex; align-items: center; gap: 8px; }
+
+        .cinema-overlay.rgb-mode-pause { background-image: linear-gradient(-45deg, #0f172a, #1e1b4b, #2e1065, #172554); background-size: 400% 400%; animation: rgbMovement 12s ease infinite; }
+        .cinema-overlay.rgb-mode-running { background-image: linear-gradient(-45deg, #f43f5e, #ec4899, #8b5cf6, #3b82f6); background-size: 400% 400%; animation: rgbMovement 4s linear infinite; }
+        .cinema-overlay.rgb-mode-done { background-image: linear-gradient(-45deg, #059669, #10b981, #06b6d4, #0284c7); background-size: 400% 400%; animation: rgbMovement 8s ease infinite; }
+
+        @keyframes rgbMovement {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
         .cinema-card { background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(25px); padding: 30px 20px; border-radius: 25px; border: 2px solid rgba(255, 255, 255, 0.15); box-shadow: 0 15px 50px rgba(0,0,0,0.6); width: 92%; max-width: 500px; text-align: center; color: white; position: relative; transform: scale(0.85); transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
         .cinema-overlay.active .cinema-card { transform: scale(1); }
         .btn-close-cinema { position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.2); border: none; color: white; font-size: 1.2rem; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
@@ -271,31 +285,36 @@
         .cinema-quest-item:last-child { border: none; }
         .cinema-quest-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: #00ffff; }
         .cinema-quest-text.completed { text-decoration: line-through; color: #94a3b8; font-style: italic; }
+        
         .progress-container { width: 100%; background: rgba(0, 0, 0, 0.4); height: 26px; border-radius: 13px; margin: 15px auto; overflow: hidden; position: relative; border: 1px solid rgba(255, 255, 255, 0.2); }
-        .progress-bar { width: 100%; background: linear-gradient(90deg, #00f2fe, #4facfe); height: 100%; transition: width 1s linear; }
+        .progress-bar { width: 100%; background: linear-gradient(90deg, #00f2fe, #4facfe); height: 100%; width: 100%; transition: width 1s linear; }
         .time-display { position: absolute; width: 100%; top: 0; left: 0; line-height: 26px; font-size: 1.1rem; font-weight: bold; text-shadow: 0 0 5px #000; text-align: center; color: white; }
         .control-btns { display: flex; justify-content: center; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
         .btn-ctrl { border: none; padding: 10px 18px; font-size: 0.85rem; font-weight: bold; border-radius: 10px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
         .btn-start { background-color: #10b981; color: white; }
-        .btn-start:disabled { background-color: #475569; color: #cbd5e1; opacity: 0.2; cursor: not-allowed; }
+        .btn-start:disabled { opacity: 0.2; cursor: not-allowed; }
         .btn-stop { background-color: #f59e0b; color: white; }
-        .btn-stop:disabled { background-color: #475569; color: #cbd5e1; opacity: 0.2; cursor: not-allowed; }
+        .btn-stop:disabled { opacity: 0.2; cursor: not-allowed; }
         .btn-finish { background: linear-gradient(90deg, #00f2fe 0%, #4facfe 100%); color: white; }
-        .btn-finish:disabled { background: #475569; color: #cbd5e1; opacity: 0.2; cursor: not-allowed; }
+        .btn-finish:disabled { opacity: 0.2; cursor: not-allowed; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <h1>☁️ SKY UBER SERVICES ☁️</h1>
+        <h1>☁️ SKY UBER SERVICES Pro ☁️</h1>
         <p>Hành trình chữa lành và những chuyến bay vạn dặm</p>
+        <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌓 Chế độ tối</button>
+        <br>
         <div class="realtime-clock-main" id="realtimeClockMain">00:00:00</div>
     </header>
 
+    <div class="month-tabs-container" id="monthTabsArea"></div>
+
     <div class="kpi-progress-container">
         <div class="kpi-progress-header">
-            <div class="kpi-progress-title">🎯 KPI Target</div>
+            <div class="kpi-progress-title">🎯 KPI TARGET (<span id="kpiTargetLabel">Tháng này</span>)</div>
             <div class="kpi-progress-text" id="kpiTargetText">0 / 5 Đơn</div>
         </div>
         <div class="kpi-progress-track">
@@ -320,13 +339,21 @@
             <div class="kpi-value" id="kpiDone">0</div>
             <div class="kpi-label">✅ Đã Xong</div>
         </div>
+        <div class="kpi-card cancel">
+            <div class="kpi-value" id="kpiCanceled">0</div>
+            <div class="kpi-label">❌ Đã Hủy</div>
+        </div>
         <div class="kpi-card hearts">
             <div class="kpi-value" id="kpiHearts">0</div>
             <div class="kpi-label">💖 Tim Nhận</div>
         </div>
     </div>
 
-    <div class="form-section">
+    <div class="toggle-form-container">
+        <button class="btn-toggle-form" id="btnToggleForm" onclick="toggleForm()">➕ LÊN ĐƠN MỚI</button>
+    </div>
+
+    <div class="form-section" id="formSection">
         <form id="orderForm">
             <input type="hidden" id="editIndex" value="">
             
@@ -364,19 +391,14 @@
                 </div>
 
                 <div class="quests-grid">
-                    <div class="quests-title">📅 Daily Quests</div>
-                    <div class="form-group">
-                        <input type="text" id="quest1" placeholder="Nhiệm vụ 1...">
+                    <div class="quests-title">
+                        <span>📅 Daily Quests</span>
+                        <button type="button" class="btn-quick-fill" onclick="quickFillQuests()">⚡ Điền Nhanh Nhiệm Vụ</button>
                     </div>
-                    <div class="form-group">
-                        <input type="text" id="quest2" placeholder="Nhiệm vụ 2...">
-                    </div>
-                    <div class="form-group">
-                        <input type="text" id="quest3" placeholder="Nhiệm vụ 3...">
-                    </div>
-                    <div class="form-group">
-                        <input type="text" id="quest4" placeholder="Nhiệm vụ 4...">
-                    </div>
+                    <div class="form-group"><input type="text" id="quest1" placeholder="Nhiệm vụ 1..."></div>
+                    <div class="form-group"><input type="text" id="quest2" placeholder="Nhiệm vụ 2..."></div>
+                    <div class="form-group"><input type="text" id="quest3" placeholder="Nhiệm vụ 3..."></div>
+                    <div class="form-group"><input type="text" id="quest4" placeholder="Nhiệm vụ 4..."></div>
                 </div>
 
                 <button type="submit" id="btnSubmitForm" class="btn-submit">✨ THÊM ĐƠN ✨</button>
@@ -385,11 +407,24 @@
     </div>
 
     <div class="list-section">
-        <div class="filter-bar">
-            <button class="filter-btn active" onclick="filterOrders('all')">Tất Cả</button>
-            <button class="filter-btn" onclick="filterOrders('Đang đợi')">⏳ Đang Đợi</button>
-            <button class="filter-btn" onclick="filterOrders('Đang chạy')">🏄‍♂️ Đang Chạy</button>
-            <button class="filter-btn" onclick="filterOrders('Đã xong')">✅ Đã Xong</button>
+        <div class="controls-wrapper">
+            <div class="filter-bar">
+                <button class="filter-btn active" id="filter-all" onclick="filterOrders('all')">Tất Cả</button>
+                <button class="filter-btn" id="filter-waiting" onclick="filterOrders('Đang đợi')">⏳ Đang Đợi</button>
+                <button class="filter-btn" id="filter-running" onclick="filterOrders('Đang chạy')">🏄‍♂️ Đang Chạy</button>
+                <button class="filter-btn" id="filter-done" onclick="filterOrders('Đã xong')">✅ Đã Xong</button>
+                <button class="filter-btn" id="filter-canceled" onclick="filterOrders('Đã hủy')">❌ Đã Hủy</button>
+                <input type="text" id="searchInput" class="search-input" placeholder="🔍 Tìm khách hàng/mã đơn..." oninput="renderOrders()">
+            </div>
+            
+            <div>
+                <select class="sort-select" id="sortSelect" onchange="changeSort()">
+                    <option value="time-asc">Thời gian: Cũ nhất trước</option>
+                    <option value="time-desc">Thời gian: Mới nhất trước</option>
+                    <option value="hearts-desc">Giá trị: Nhiều Tim nhất</option>
+                    <option value="hearts-asc">Giá trị: Ít Tim nhất</option>
+                </select>
+            </div>
         </div>
 
         <div class="table-container">
@@ -408,7 +443,18 @@
                 </thead>
                 <tbody id="orderTableBody"></tbody>
             </table>
-            <div id="emptyMessage" style="text-align: center; padding: 20px; display: none; color: grey;">Chưa có đơn nào... ✨</div>
+            <div id="emptyMessage" style="text-align: center; padding: 20px; display: none; color: grey;">Chưa có đơn nào khớp với bộ lọc... ✨</div>
+        </div>
+    </div>
+
+    <div class="backup-section">
+        <h3>💾 Hệ Thống Sao Lưu & Xuất Báo Cáo Excel</h3>
+        <p style="font-size:0.85rem; opacity:0.8; margin-bottom:15px;">Xuất dữ liệu của bạn ra file JSON để đồng bộ thiết bị hoặc tải file Excel (.xlsx) báo cáo số liệu các tháng.</p>
+        <div class="backup-zone">
+            <button class="btn-utility" onclick="exportData()">📤 Xuất file dữ liệu (JSON)</button>
+            <button class="btn-utility btn-excel" onclick="exportToExcel()">📊 Xuất báo cáo Excel (.xlsx)</button>
+            <button class="btn-utility" onclick="document.getElementById('importFile').click()">📥 Nhập dữ liệu từ file</button>
+            <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importData(this)">
         </div>
     </div>
 </div>
@@ -449,22 +495,71 @@
     </div>
 </div>
 
+<!-- ==================== ĐÃ THAY ĐỔI: SỬA HÀM TOGGLEFORM() TRONG JAVASCRIPT ==================== -->
 <script>
     let orders = JSON.parse(localStorage.getItem('skyUberOrders')) || [];
     let currentFilter = 'all';
+    let currentSort = 'time-asc';
+    let selectedMonthYear = ""; 
 
-    let countdownInterval;
-    let totalSeconds = 3600;
-    let remainingSeconds = totalSeconds;
-    let timerRunning = false;
     let activeOrderIndex = null;
+    const totalDurationSeconds = 3600; 
+    const kpiTargetValue = 5; 
 
-    const kpiTargetValue = 5; // Mục tiêu KPI là 5 đơn
+    // Khởi tạo thời gian mặc định cho input form
+    document.getElementById('startTime').value = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16);
 
-    const now = new Date();
-    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-    document.getElementById('startTime').value = now.toISOString().slice(0,16);
+    const currentMonthStr = (new Date().getMonth() + 1).toString().padStart(2, '0');
+    const currentYearStr = new Date().getFullYear().toString();
+    selectedMonthYear = `${currentMonthStr}/${currentYearStr}`;
 
+    if(localStorage.getItem('skyTheme') === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        document.getElementById('themeBtn').innerText = "☀️ Chế độ sáng";
+    }
+
+    function toggleTheme() {
+        if(document.documentElement.getAttribute('data-theme') === 'dark') {
+            document.documentElement.removeAttribute('data-theme');
+            localStorage.setItem('skyTheme', 'light');
+            document.getElementById('themeBtn').innerText = "🌓 Chế độ tối";
+        } else {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('skyTheme', 'dark');
+            document.getElementById('themeBtn').innerText = "☀️ Chế độ sáng";
+        }
+    }
+
+    /* Đã sửa logic: kích hoạt thuộc tính hình ảnh scale mềm mại */
+    function toggleForm() {
+        const formSection = document.getElementById('formSection');
+        const btn = document.getElementById('btnToggleForm');
+        
+        if (formSection.classList.contains('show')) {
+            formSection.classList.remove('show');
+            // Đợi chạy hết 400ms hiệu ứng thu nhỏ thu hẹp rồi mới ẩn hoàn toàn khỏi layout
+            setTimeout(() => { formSection.style.display = 'none'; }, 400);
+            btn.innerText = "➕ LÊN ĐƠN MỚI";
+            btn.style.background = "#e056fd";
+        } else {
+            formSection.style.display = 'block';
+            // Cho browser 15ms render trạng thái block, sau đó mới phóng to ra tạo độ nảy đàn hồi
+            setTimeout(() => { formSection.classList.add('show'); }, 15);
+            btn.innerText = "✕ ĐÓNG KHUNG TẠO ĐƠN";
+            btn.style.background = "#e74c3c";
+        }
+    }
+
+    function quickFillQuests() {
+        const rawText = prompt("Dán danh sách 4 nhiệm vụ của bạn vào đây (Cách nhau bằng dấu phẩy hoặc xuống dòng):");
+        if (!rawText) return;
+        let lines = rawText.split(/[,\n]/).map(l => l.trim()).filter(l => l !== "");
+        for (let i = 0; i < 4; i++) {
+            document.getElementById(`quest${i+1}`).value = lines[i] || "";
+        }
+    }
+
+    /* ĐỒNG HỒ TRUNG TÂM & ĐẾM NGƯỢC THỜI GIAN THỰC */
     function updateRealTimeClocks() {
         const d = new Date();
         const hours = d.getHours().toString().padStart(2, '0');
@@ -474,12 +569,46 @@
         
         document.getElementById('realtimeClockMain').innerText = timeString;
         document.getElementById('realtimeClockCinema').innerText = timeString;
+
+        let needSave = false;
+
+        orders.forEach((order, index) => {
+            if (order.status === 'Đang chạy' && order.endTimeTimestamp) {
+                let diffMs = order.endTimeTimestamp - Date.now();
+                let remainingSecs = Math.max(0, Math.floor(diffMs / 1000));
+                
+                if (remainingSecs <= 0) {
+                    order.status = 'Đã xong';
+                    delete order.endTimeTimestamp;
+                    delete order.pausedRemainingSeconds;
+                    needSave = true;
+                } else {
+                    let mins = Math.floor(remainingSecs / 60);
+                    let secs = remainingSecs % 60;
+                    let displayStr = `⏱️ [${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}]`;
+                    
+                    let liveLabel = document.getElementById(`liveTimer-${index}`);
+                    if (liveLabel) { liveLabel.innerText = displayStr; }
+
+                    // Cập nhật giao diện Cinema View nếu chính đơn này đang được mở
+                    if (activeOrderIndex === index) {
+                        document.getElementById('timeDisplay').innerText = mins.toString().padStart(2, '0') + ':' + secs.toString().padStart(2, '0');
+                        document.getElementById('cinemaProgress').style.width = ((remainingSecs / totalDurationSeconds) * 100) + '%';
+                    }
+                }
+            }
+        });
+
+        if (needSave) {
+            saveData();
+        }
     }
     updateRealTimeClocks();
     setInterval(updateRealTimeClocks, 1000);
 
     function saveData() {
         localStorage.setItem('skyUberOrders', JSON.stringify(orders));
+        buildMonthTabs(); 
         renderOrders();
     }
 
@@ -488,37 +617,90 @@
         return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth()+1).toString().padStart(2, '0')} - ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
     }
 
-    // --- HÀM TÍNH TOÁN VÀ CẬP NHẬT KPI ---
-function updateKPI() {
-        // 1. Tính toán số liệu
-        const total = orders.length;
-        const waiting = orders.filter(o => o.status === 'Đang đợi').length;
-        const running = orders.filter(o => o.status === 'Đang chạy').length;
-        const done = orders.filter(o => o.status === 'Đã xong').length;
-        const hearts = orders.filter(o => o.status === 'Đã xong').reduce((sum, o) => sum + (parseInt(o.totalHearts) || 0), 0);
+    function getMonthYearKey(dateTimeStr) {
+        if (!dateTimeStr) return "";
+        const d = new Date(dateTimeStr);
+        const m = (d.getMonth() + 1).toString().padStart(2, '0');
+        const y = d.getFullYear();
+        return `${m}/${y}`;
+    }
 
-        // 2. Cập nhật các ô số
+    function buildMonthTabs() {
+        const tabsArea = document.getElementById('monthTabsArea');
+        let monthSet = new Set();
+        orders.forEach(o => {
+            if(o.startTime) monthSet.add(getMonthYearKey(o.startTime));
+        });
+        monthSet.add(selectedMonthYear);
+
+        let monthList = Array.from(monthSet).sort((a,b) => {
+            let partsA = a.split('/'); let partsB = b.split('/');
+            return new Date(partsB[1], partsB[0]-1) - new Date(partsA[1], partsA[0]-1);
+        });
+
+        tabsArea.innerHTML = '';
+        monthList.forEach(mKey => {
+            const btn = document.createElement('button');
+            btn.className = `month-tab ${mKey === selectedMonthYear ? 'active' : ''}`;
+            btn.innerText = `📅 Tháng ${mKey}`;
+            btn.onclick = () => {
+                selectedMonthYear = mKey;
+                document.querySelectorAll('.month-tab').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                renderOrders();
+            };
+            tabsArea.appendChild(btn);
+        });
+    }
+
+    function updateKPI(ordersInSelectedMonth) {
+        const total = ordersInSelectedMonth.length;
+        const waiting = ordersInSelectedMonth.filter(o => o.status === 'Đang đợi').length;
+        const running = ordersInSelectedMonth.filter(o => o.status === 'Đang chạy').length;
+        const done = ordersInSelectedMonth.filter(o => o.status === 'Đã xong').length;
+        const canceled = ordersInSelectedMonth.filter(o => o.status === 'Đã hủy').length; 
+        const hearts = ordersInSelectedMonth.filter(o => o.status === 'Đã xong').reduce((sum, o) => sum + (parseInt(o.totalHearts) || 0), 0);
+
         document.getElementById('kpiTotal').innerText = total;
         document.getElementById('kpiWaiting').innerText = waiting;
         document.getElementById('kpiRunning').innerText = running;
         document.getElementById('kpiDone').innerText = done;
+        document.getElementById('kpiCanceled').innerText = canceled; 
         document.getElementById('kpiHearts').innerText = hearts;
 
-        // 3. Cập nhật thanh tiến độ
         const fill = document.getElementById('kpiProgressFill');
-        const percent = Math.min((done / kpiTargetValue) * 100, 100);
+        const percent = totalDurationSeconds > 0 ? Math.min((done / kpiTargetValue) * 100, 100) : 0;
         
         fill.style.width = `${percent}%`;
         fill.style.backgroundColor = `color-mix(in srgb, #e056fd ${100 - percent}%, #10b981 ${percent}%)`;
         document.getElementById('kpiTargetText').innerText = `${done} / ${kpiTargetValue} Đơn`;
+        document.getElementById('kpiTargetLabel').innerText = `Tháng ${selectedMonthYear}`;
     }
 
     function renderOrders() {
         const tbody = document.getElementById('orderTableBody');
         const emptyMsg = document.getElementById('emptyMessage');
+        const searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
         tbody.innerHTML = '';
 
-        const filteredOrders = orders.filter(order => currentFilter === 'all' || order.status === currentFilter);
+        let monthOrders = orders.filter(order => getMonthYearKey(order.startTime) === selectedMonthYear);
+        let filteredOrders = monthOrders.filter(order => currentFilter === 'all' || order.status === currentFilter);
+        
+        if (searchQuery !== "") {
+            filteredOrders = filteredOrders.filter(order => 
+                order.customerName.toLowerCase().includes(searchQuery) || 
+                (order.orderId && order.orderId.toLowerCase().includes(searchQuery))
+            );
+        }
+
+        filteredOrders.sort((a, b) => {
+            if (currentSort === 'time-asc') return new Date(a.startTime) - new Date(b.startTime);
+            if (currentSort === 'time-desc') return new Date(b.startTime) - new Date(a.startTime);
+            if (currentSort === 'hearts-desc') return (parseInt(b.totalHearts) || 0) - (parseInt(a.totalHearts) || 0);
+            if (currentSort === 'hearts-asc') return (parseInt(a.totalHearts) || 0) - (parseInt(b.totalHearts) || 0);
+            return 0;
+        });
+
         if (filteredOrders.length === 0) { emptyMsg.style.display = 'block'; } else { emptyMsg.style.display = 'none'; }
 
         let count = 1;
@@ -531,34 +713,58 @@ function updateKPI() {
             if (order.status === 'Đang chạy' || order.status === 'Đã xong') {
                 cinemaBtn = `<button class="btn-action" onclick="openCinemaModal(${actualIndex})" title="Mở màn hình treo máy">📺</button>`;
             }
+            
             if (order.status === 'Đang chạy') statusClass = 'status-running';
             if (order.status === 'Đã xong') statusClass = 'status-done';
+            if (order.status === 'Đã hủy') statusClass = 'status-canceled';
 
             const blockCode = order.orderId ? `<div class="id-badge">${order.orderId}</div>` : '';
+            let liveTimerBadge = (order.status === 'Đang chạy' && order.endTimeTimestamp) ? `<span class="live-sync-timer" id="liveTimer-${actualIndex}">⏱️ [--:--]</span>` : '';
+            let quickDoneBtn = (order.status !== 'Đã xong' && order.status !== 'Đã hủy') ? `<button class="btn-action" onclick="quickDoneOrder(${actualIndex})" title="Hoàn thành đơn nhanh" style="color:#10b981;">✅</button>` : '';
+            let cancelBtn = (order.status !== 'Đã hủy' && order.status !== 'Đã xong') ? `<button class="btn-action" onclick="cancelOrder(${actualIndex})" title="Hủy đơn hàng" style="color:#e74c3c;">🗑️</button>` : '';
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td data-label="STT" style="text-align: center; font-weight: bold; color: #7f8c8d;">${count++}</td>
                 <td data-label="Mã Đơn">${blockCode || '<span style="color:#aaa;">-</span>'}</td>
                 <td data-label="Khách Hàng" style="font-weight:600;"><span class="wrap-text">${order.customerName}</span></td>
-                <td data-label="Dịch Vụ"><span class="wrap-text">${order.serviceName}</span></td>
+                <td data-label="Dịch Vụ"><span class="wrap-text">${order.serviceName}</span> ${liveTimerBadge}</td>
                 <td data-label="Thời Gian" style="font-size:0.85rem;">${formatDateTime(order.startTime)}</td>
-                <td data-label="Giá (💖)" style="font-weight:bold; color:#e056fd;">${order.totalHearts} 💖</td>
+                <td data-label="Giá (💖)" style="font-weight:bold; color:#e056fd; ${order.status === 'Đã hủy' ? 'text-decoration: line-through; opacity: 0.5;' : ''}">${order.totalHearts} 💖</td>
                 <td data-label="Trạng Thái"><span class="status-badge ${statusClass}">${order.status}</span></td>
                 <td data-label="Hành Động">
                     <div class="action-group">
                         <button class="btn-action" onclick="showOrderInfo(${actualIndex})" title="Xem thông tin chi tiết">ℹ️</button>
                         ${cinemaBtn}
                         <button class="btn-action" onclick="editOrder(${actualIndex})" title="Chỉnh sửa đơn">📝</button>
-                        <button class="btn-action" onclick="changeStatus(${actualIndex})" title="Đổi trạng thái">🔄</button>
-                        <button class="btn-action" onclick="deleteOrder(${actualIndex})" title="Xóa">❌</button>
+                        <button class="btn-action" onclick="changeStatus(${actualIndex})" title="Đổi trạng thái tuần hoàn">🔄</button>
+                        ${quickDoneBtn}
+                        ${cancelBtn}
+                        <button class="btn-action" onclick="deleteOrder(${actualIndex})" title="Xóa vĩnh viễn">❌</button>
                     </div>
                 </td>
             `;
             tbody.appendChild(tr);
         });
 
-        updateKPI();
+        updateKPI(monthOrders);
+    }
+
+    function quickDoneOrder(index) {
+        orders[index].status = 'Đã xong';
+        delete orders[index].endTimeTimestamp;
+        delete orders[index].pausedRemainingSeconds;
+        saveData();
+    }
+
+    function cancelOrder(index) {
+        if(confirm(`Bạn có chắc chắn muốn HỦY đơn hàng của khách "${orders[index].customerName}" không? (Số tim sẽ không được tính vào doanh thu)`)) {
+            orders[index].status = 'Đã hủy';
+            delete orders[index].endTimeTimestamp;
+            delete orders[index].pausedRemainingSeconds;
+            if(activeOrderIndex === index) { closeCinema(); }
+            saveData();
+        }
     }
 
     function showOrderInfo(index) {
@@ -587,16 +793,12 @@ function updateKPI() {
             <p><strong>Khách Hàng:</strong> ${order.customerName}</p>
             <p><strong>Dịch Vụ:</strong> ${order.serviceName}</p>
             <p><strong>Thời Gian:</strong> ${formatDateTime(order.startTime)}</p>
-            <p><strong>Số Tim Nhận:</strong> ${order.totalHearts} 💖</p>
+            <p><strong>Số Tim Nhận:</strong> ${order.totalHearts} 💖 ${order.status === 'Đã hủy' ? '(Không tính do đơn hủy)' : ''}</p>
             <p><strong>Trạng Thái:</strong> ${order.status}</p>
             <p><strong>Yêu Cầu Chi Tiết:</strong><br><span style="color:#555; font-style:italic; word-break: break-all;">${order.requirements || 'Không có yêu cầu đặc biệt.'}</span></p>
             ${questHtml}
         `;
         document.getElementById('infoOverlay').classList.add('active');
-    }
-
-    function closeInfoModal() {
-        document.getElementById('infoOverlay').classList.remove('active');
     }
 
     document.getElementById('orderForm').addEventListener('submit', function(e) {
@@ -610,11 +812,13 @@ function updateKPI() {
             { text: document.getElementById('quest4').value.trim(), checked: false }
         ];
 
+        const inputStartTime = document.getElementById('startTime').value;
+
         const orderData = {
             orderId: document.getElementById('orderId').value.trim(),
             customerName: document.getElementById('customerName').value,
             serviceName: document.getElementById('serviceName').value,
-            startTime: document.getElementById('startTime').value,
+            startTime: inputStartTime,
             totalHearts: document.getElementById('totalHearts').value,
             requirements: document.getElementById('requirements').value,
             quests: questList,
@@ -629,15 +833,21 @@ function updateKPI() {
                     }
                 }
             }
+            if(orders[editIndex].endTimeTimestamp) orderData.endTimeTimestamp = orders[editIndex].endTimeTimestamp;
+            if(orders[editIndex].pausedRemainingSeconds) orderData.pausedRemainingSeconds = orders[editIndex].pausedRemainingSeconds;
+
             orders[editIndex] = orderData;
             document.getElementById('editIndex').value = "";
             const submitBtn = document.getElementById('btnSubmitForm');
             submitBtn.innerText = "✨ THÊM ĐƠN ✨";
             submitBtn.classList.remove('editing-mode');
+            toggleForm();
         } else {
             orders.push(orderData);
+            toggleForm();
         }
 
+        selectedMonthYear = getMonthYearKey(inputStartTime);
         saveData();
         this.reset();
         document.getElementById('startTime').value = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0,16);
@@ -645,8 +855,13 @@ function updateKPI() {
 
     function editOrder(index) {
         const order = orders[index];
-        document.getElementById('editIndex').value = index;
+        const formSection = document.getElementById('formSection');
         
+        if(!formSection.classList.contains('show')) {
+            toggleForm();
+        }
+
+        document.getElementById('editIndex').value = index;
         document.getElementById('orderId').value = order.orderId || '';
         document.getElementById('customerName').value = order.customerName;
         document.getElementById('serviceName').value = order.serviceName;
@@ -659,11 +874,6 @@ function updateKPI() {
             document.getElementById('quest2').value = order.quests[1] ? order.quests[1].text : '';
             document.getElementById('quest3').value = order.quests[2] ? order.quests[2].text : '';
             document.getElementById('quest4').value = order.quests[3] ? order.quests[3].text : '';
-        } else {
-            document.getElementById('quest1').value = '';
-            document.getElementById('quest2').value = '';
-            document.getElementById('quest3').value = '';
-            document.getElementById('quest4').value = '';
         }
 
         const submitBtn = document.getElementById('btnSubmitForm');
@@ -675,14 +885,22 @@ function updateKPI() {
 
     function changeStatus(index) {
         const current = orders[index].status;
-        if (current === 'Đang đợi') orders[index].status = 'Đang chạy';
-        else if (current === 'Đang chạy') orders[index].status = 'Đã xong';
-        else orders[index].status = 'Đang đợi';
+        if (current === 'Đang đợi') {
+            orders[index].status = 'Đang chạy';
+        } else if (current === 'Đang chạy') {
+            orders[index].status = 'Đã xong';
+            delete orders[index].endTimeTimestamp;
+            delete orders[index].pausedRemainingSeconds;
+        } else if (current === 'Đã xong') {
+            orders[index].status = 'Đã hủy';
+        } else {
+            orders[index].status = 'Đang đợi';
+        }
         saveData();
     }
 
     function deleteOrder(index) {
-        if(confirm("Xóa đơn này?")) { 
+        if(confirm("Xóa vĩnh viễn đơn hàng này ra khỏi lịch sử hệ thống?")) { 
             orders.splice(index, 1); 
             if(activeOrderIndex === index) { closeCinema(); }
             saveData(); 
@@ -691,36 +909,64 @@ function updateKPI() {
 
     function filterOrders(filterType) {
         currentFilter = filterType;
-        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-        event.target.classList.add('active');
+        document.querySelectorAll('.filter-bar .filter-btn').forEach(btn => btn.classList.remove('active'));
+        
+        let targetId = 'filter-all';
+        if(filterType === 'Đang đợi') targetId = 'filter-waiting';
+        if(filterType === 'Đang chạy') targetId = 'filter-running';
+        if(filterType === 'Đã xong') targetId = 'filter-done';
+        if(filterType === 'Đã hủy') targetId = 'filter-canceled';
+
+        document.getElementById(targetId).classList.add('active');
         renderOrders();
     }
 
+    function changeSort() {
+        currentSort = document.getElementById('sortSelect').value;
+        renderOrders();
+    }
+
+    function closeInfoModal() { document.getElementById('infoOverlay').classList.remove('active'); }
+    function closeCinema() { document.getElementById('cinemaOverlay').classList.remove('active'); activeOrderIndex = null; }
+
+    /* ĐỒNG BỘ TRẠNG THÁI VÀ HIỆU ỨNG TRÊN CINEMA VIEW */
     function openCinemaModal(index) {
         const order = orders[index];
         const overlay = document.getElementById('cinemaOverlay');
+        activeOrderIndex = index;
         
-        if (activeOrderIndex !== index || order.status !== 'Đã xong') {
-            clearInterval(countdownInterval);
-            timerRunning = false;
-            activeOrderIndex = index;
-            
-            if (order.status === 'Đã xong') {
-                remainingSeconds = 0;
+        if (order.status === 'Đã xong') {
+            document.getElementById('btnStart').disabled = true;
+            document.getElementById('btnStop').disabled = true;
+            document.getElementById('btnFinish').disabled = true;
+            overlay.className = 'cinema-overlay rgb-mode-done';
+            document.getElementById('cinemaStatusText').innerText = '🎉 ĐƠN ĐÃ HOÀN THÀNH 🎉';
+            document.getElementById('timeDisplay').innerText = '00:00';
+            document.getElementById('cinemaProgress').style.width = '0%';
+        } else {
+            if (order.endTimeTimestamp) {
+                overlay.className = 'cinema-overlay rgb-mode-running';
+                document.getElementById('cinemaStatusText').innerText = '🚀 GÉT GOOOO 🚀';
                 document.getElementById('btnStart').disabled = true;
-                document.getElementById('btnStop').disabled = true;
-                document.getElementById('btnFinish').disabled = true;
-                overlay.className = 'cinema-overlay rgb-mode-done';
-                document.getElementById('cinemaStatusText').innerText = '🎉 ĐƠN ĐÃ HOÀN THÀNH 🎉';
-                document.getElementById('timeDisplay').innerText = '00:00';
-                document.getElementById('cinemaProgress').style.width = '0%';
-            } else {
-                remainingSeconds = totalSeconds;
+                document.getElementById('btnStop').disabled = false;
+                document.getElementById('btnFinish').disabled = false;
+            } else if (order.pausedRemainingSeconds !== undefined) {
+                overlay.className = 'cinema-overlay rgb-mode-pause';
+                document.getElementById('cinemaStatusText').innerText = '⏸️ STOPPING!';
                 document.getElementById('btnStart').disabled = false;
                 document.getElementById('btnStop').disabled = true;
                 document.getElementById('btnFinish').disabled = false;
+                
+                let mins = Math.floor(order.pausedRemainingSeconds / 60);
+                let secs = order.pausedRemainingSeconds % 60;
+                document.getElementById('timeDisplay').innerText = mins.toString().padStart(2, '0') + ':' + secs.toString().padStart(2, '0');
+                document.getElementById('cinemaProgress').style.width = ((order.pausedRemainingSeconds / totalDurationSeconds) * 100) + '%';
+            } else {
                 overlay.className = 'cinema-overlay rgb-mode-pause';
-                document.getElementById('cinemaStatusText').innerText = '⏸️ STOPPING!';
+                document.getElementById('cinemaStatusText').innerText = '⏸️ READY!';
+                document.getElementById('btnStart').disabled = false;
+                document.getElementById('btnStop').disabled = true;
+                document.getElementById('btnFinish').disabled = false;
                 document.getElementById('timeDisplay').innerText = '60:00';
                 document.getElementById('cinemaProgress').style.width = '100%';
             }
@@ -732,7 +978,6 @@ function updateKPI() {
         const questsArea = document.getElementById('cinemaQuestsArea');
         const questsListContainer = document.getElementById('cinemaQuestsList');
         questsListContainer.innerHTML = '';
-        
         const hasQuests = order.quests && order.quests.some(q => q.text !== '');
         
         if (hasQuests) {
@@ -759,71 +1004,46 @@ function updateKPI() {
         overlay.classList.add('active');
     }
 
-    function toggleQuest(orderIdx, questIdx, checkboxElem) {
-        orders[orderIdx].quests[questIdx].checked = checkboxElem.checked;
-        const textElem = checkboxElem.nextElementSibling;
-        if(checkboxElem.checked) {
-            textElem.classList.add('completed');
-        } else {
-            textElem.classList.remove('completed');
-        }
-        localStorage.setItem('skyUberOrders', JSON.stringify(orders));
-    }
-
-    function closeCinema() {
-        document.getElementById('cinemaOverlay').classList.remove('active');
-    }
-
     function startTimer() {
-        if (timerRunning) return;
-        timerRunning = true;
+        if (activeOrderIndex === null) return;
+        let order = orders[activeOrderIndex];
+        if (order.status === 'Đã xong') return;
+        
+        let remaining = order.pausedRemainingSeconds !== undefined ? order.pausedRemainingSeconds : totalDurationSeconds;
+        order.endTimeTimestamp = Date.now() + (remaining * 1000);
+        delete order.pausedRemainingSeconds;
+        order.status = 'Đang chạy';
+        
         document.getElementById('cinemaOverlay').className = 'cinema-overlay rgb-mode-running active';
         document.getElementById('cinemaStatusText').innerText = '🚀 GÉT GOOOO 🚀';
         document.getElementById('btnStart').disabled = true;
         document.getElementById('btnStop').disabled = false;
 
-        countdownInterval = setInterval(() => {
-            remainingSeconds--;
-            
-            let mins = Math.floor(remainingSeconds / 60);
-            let secs = remainingSeconds % 60;
-            document.getElementById('timeDisplay').innerText = mins.toString().padStart(2, '0') + ':' + secs.toString().padStart(2, '0');
-            document.getElementById('cinemaProgress').style.width = ((remainingSeconds / totalSeconds) * 100) + '%';
-
-            if (remainingSeconds <= 0) {
-                clearInterval(countdownInterval);
-                timerRunning = false;
-                document.getElementById('cinemaOverlay').className = 'cinema-overlay rgb-mode-done active';
-                document.getElementById('cinemaStatusText').innerText = '🎉 ĐƠN ĐÃ HOÀN THÀNH 🎉';
-                document.getElementById('btnStop').disabled = true;
-                document.getElementById('btnFinish').disabled = true;
-                
-                if(activeOrderIndex !== null && orders[activeOrderIndex]) {
-                    orders[activeOrderIndex].status = 'Đã xong';
-                    saveData();
-                }
-            }
-        }, 1000);
+        saveData();
     }
 
     function pauseTimer() {
-        if (!timerRunning) return;
-        timerRunning = false;
-        clearInterval(countdownInterval);
+        if (activeOrderIndex === null) return;
+        let order = orders[activeOrderIndex];
+        if (!order.endTimeTimestamp) return;
+
+        let diffMs = order.endTimeTimestamp - Date.now();
+        order.pausedRemainingSeconds = Math.max(0, Math.floor(diffMs / 1000));
+        delete order.endTimeTimestamp;
+
         document.getElementById('cinemaOverlay').className = 'cinema-overlay rgb-mode-pause active';
         document.getElementById('cinemaStatusText').innerText = '⏸️ STOPPING';
         document.getElementById('btnStart').disabled = false;
         document.getElementById('btnStop').disabled = true;
+        
+        saveData();
     }
 
     function finishEarly() {
-        clearInterval(countdownInterval);
-        timerRunning = false;
-        remainingSeconds = 0;
+        if (activeOrderIndex === null) return;
         
         document.getElementById('cinemaOverlay').className = 'cinema-overlay rgb-mode-done active';
         document.getElementById('cinemaStatusText').innerText = '🎉 ĐƠN ĐÃ HOÀN THÀNH 🎉';
-        
         document.getElementById('timeDisplay').innerText = '00:00';
         document.getElementById('cinemaProgress').style.width = '0%';
         
@@ -831,12 +1051,112 @@ function updateKPI() {
         document.getElementById('btnStop').disabled = true;
         document.getElementById('btnFinish').disabled = true;
 
-        if(activeOrderIndex !== null && orders[activeOrderIndex]) {
-            orders[activeOrderIndex].status = 'Đã xong';
-            saveData();
-        }
+        orders[activeOrderIndex].status = 'Đã xong';
+        delete orders[activeOrderIndex].endTimeTimestamp;
+        delete orders[activeOrderIndex].pausedRemainingSeconds;
+        saveData();
     }
 
+    function toggleQuest(orderIdx, questIdx, checkboxElem) {
+        orders[orderIdx].quests[questIdx].checked = checkboxElem.checked;
+        const textElem = checkboxElem.nextElementSibling;
+        if(checkboxElem.checked) textElem.classList.add('completed');
+        else textElem.classList.remove('completed');
+        localStorage.setItem('skyUberOrders', JSON.stringify(orders));
+    }
+
+    function exportData() {
+        if(orders.length === 0) { alert("Hiện tại chưa có đơn hàng nào để xuất dữ liệu."); return; }
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(orders, null, 4));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `sky_uber_backup_${new Date().toISOString().slice(0,10)}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    }
+
+    function exportToExcel() {
+        if (orders.length === 0) { alert("Hiện tại chưa có đơn hàng nào dữ liệu để xuất Excel."); return; }
+
+        let monthSet = new Set();
+        orders.forEach(o => { if(o.startTime) monthSet.add(getMonthYearKey(o.startTime)); });
+        let monthList = Array.from(monthSet).sort((a,b) => {
+            let partsA = a.split('/'); let partsB = b.split('/');
+            return new Date(partsB[1], partsB[0]-1) - new Date(partsA[1], partsA[0]-1);
+        });
+
+        let summaryData = [
+            ["BÁO CÁO HIỆU SUẤT ĐƠN HÀNG THEO CÁC THÁNG"],
+            [],
+            ["Tháng", "Tổng Số Đơn", "Đơn Đang Đợi", "Đơn Đang Chạy", "Đơn Đã Xong (KPI)", "Đơn Đã Hủy", "Tổng Số Tim Thực Nhận"]
+        ];
+
+        monthList.forEach(mKey => {
+            let mOrders = orders.filter(o => getMonthYearKey(o.startTime) === mKey);
+            let total = mOrders.length;
+            let waiting = mOrders.filter(o => o.status === 'Đang đợi').length;
+            let running = mOrders.filter(o => o.status === 'Đang chạy').length;
+            let done = mOrders.filter(o => o.status === 'Đã xong').length;
+            let canceled = mOrders.filter(o => o.status === 'Đã hủy').length;
+            let hearts = mOrders.filter(o => o.status === 'Đã xong').reduce((sum, o) => sum + (parseInt(o.totalHearts) || 0), 0);
+            
+            summaryData.push([`Tháng ${mKey}`, total, waiting, running, done, canceled, hearts]);
+        });
+
+        let detailData = [
+            ["DANH SÁCH CHI TIẾT ĐƠN HÀNG SYSTEM LOG"],
+            [],
+            ["STT", "Mã Đơn", "Tên Khách Hàng", "Tên Dịch Vụ", "Thời Gian Bắt Đầu", "Giá Trị (Tim)", "Trạng Thái", "Yêu Cầu Chi Tiết"]
+        ];
+
+        let sortedOrders = [...orders].sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+        sortedOrders.forEach((o, idx) => {
+            detailData.push([
+                idx + 1,
+                o.orderId || "-",
+                o.customerName,
+                o.serviceName,
+                formatDateTime(o.startTime),
+                parseInt(o.totalHearts) || 0,
+                o.status,
+                o.requirements || "Không có"
+            ]);
+        });
+
+        const wb = XLSX.utils.book_new();
+        const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
+        const wsDetail = XLSX.utils.aoa_to_sheet(detailData);
+
+        XLSX.utils.book_append_sheet(wb, wsSummary, "Tổng Quan Theo Tháng");
+        XLSX.utils.book_append_sheet(wb, wsDetail, "Chi Tiết Đơn Hàng");
+
+        XLSX.writeFile(wb, `sky_uber_report_${new Date().toISOString().slice(0,10)}.xlsx`);
+    }
+
+    function importData(inputElement) {
+        const file = inputElement.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedOrders = JSON.parse(e.target.result);
+                if (Array.isArray(importedOrders)) {
+                    if(confirm(`Tìm thấy ${importedOrders.length} đơn hàng từ file. Ghi đè vào hệ thống?`)) {
+                        orders = importedOrders;
+                        if(orders.length > 0 && orders[0].startTime) { selectedMonthYear = getMonthYearKey(orders[0].startTime); }
+                        saveData();
+                        alert("Đã khôi phục dữ liệu Sky Uber thành công! ✨");
+                    }
+                } else { alert("Cấu trúc file JSON không hợp lệ."); }
+            } catch (err) { alert("Đã xảy ra lỗi khi đọc file dữ liệu."); }
+            inputElement.value = '';
+        };
+        reader.readAsText(file);
+    }
+
+    buildMonthTabs();
     renderOrders();
 </script>
 </body>
