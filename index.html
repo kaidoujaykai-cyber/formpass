@@ -43,6 +43,57 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
+        /* ==================== KPI SECTION ==================== */
+        .kpi-section {
+            display: flex;
+            gap: 12px;
+            width: 100%;
+            margin-bottom: 20px;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .kpi-card {
+            background: var(--panel-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 20px;
+            padding: 15px 10px;
+            flex: 1;
+            min-width: 110px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.06);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease;
+        }
+
+        .kpi-card:hover { transform: translateY(-5px); }
+
+        .kpi-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--accent-color);
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .kpi-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #5a738e;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .kpi-card.waiting .kpi-value { color: #e67e22; }
+        .kpi-card.running .kpi-value { color: #3498db; }
+        .kpi-card.done .kpi-value { color: #10b981; }
+        .kpi-card.hearts .kpi-value { color: #e056fd; }
+        .kpi-card.target .kpi-value { color: #f39c12; }
+
         .form-section, .list-section {
             background: var(--panel-bg); backdrop-filter: blur(10px); padding: 20px;
             border-radius: 25px; box-shadow: 0 8px 32px rgba(31, 38, 135, 0.06);
@@ -50,46 +101,20 @@
             width: 100%;
         }
 
-        .form-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
-            gap: 15px; 
-        }
-
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
         .form-group { display: flex; flex-direction: column; width: 100%; }
         .form-group label { font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; color: #4a637a; }
-        
         .form-group input, .form-group select, .form-group textarea {
             width: 100%; padding: 11px; border: 1px solid rgba(255, 255, 255, 0.7); border-radius: 12px;
             background: rgba(255, 255, 255, 0.85); color: var(--text-color); font-size: 0.95rem; outline: none;
         }
-
-        .grid-span-2 {
-            grid-column: span 2;
-        }
-
+        .grid-span-2 { grid-column: span 2; }
         .quests-grid {
-            grid-column: 1 / -1;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 12px;
-            background: rgba(255, 255, 255, 0.4);
-            padding: 15px;
-            border-radius: 15px;
-            border: 1px dashed rgba(109, 162, 219, 0.5);
-            margin-top: 5px;
+            grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px; background: rgba(255, 255, 255, 0.4); padding: 15px; border-radius: 15px;
+            border: 1px dashed rgba(109, 162, 219, 0.5); margin-top: 5px;
         }
-        .quests-title {
-            grid-column: 1 / -1;
-            font-size: 0.95rem;
-            font-weight: bold;
-            color: #34495e;
-            margin-bottom: -5px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
+        .quests-title { grid-column: 1 / -1; font-size: 0.95rem; font-weight: bold; color: #34495e; margin-bottom: -5px; display: flex; align-items: center; gap: 6px; }
         .btn-submit {
             grid-column: 1 / -1; background: #fff; color: var(--accent-color); border: 2px solid var(--accent-color);
             padding: 12px; font-size: 1rem; font-weight: bold; border-radius: 12px; cursor: pointer; transition: all 0.3s; margin-top: 5px;
@@ -101,27 +126,14 @@
         .filter-bar { margin-bottom: 15px; display: flex; gap: 8px; flex-wrap: wrap; }
         .filter-btn {
             background: rgba(255, 255, 255, 0.6); border: none; padding: 8px 14px; border-radius: 20px;
-            cursor: pointer; font-weight: 500; color: var(--text-color); transition: all 0.2s; font-size: 0.85rem;
-            border: 1px solid rgba(255,255,255,0.4);
+            cursor: pointer; font-weight: 500; color: var(--text-color); transition: all 0.2s; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.4);
         }
         .filter-btn.active, .filter-btn:hover { background: var(--accent-color); color: #fff; border-color: var(--accent-color); }
-
         .table-container { width: 100%; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; text-align: left; }
         th, td { padding: 12px 14px; border-bottom: 1px solid rgba(0, 0, 0, 0.05); font-size: 0.95rem; }
         th { background-color: rgba(109, 162, 219, 0.15); color: #34495e; font-weight: 600; }
-
-        .id-badge { 
-            font-size: 0.85rem; 
-            background: rgba(0,0,0,0.06); 
-            padding: 4px 10px; 
-            border-radius: 8px; 
-            color: #5a738e; 
-            display: inline-block; 
-            margin: 2px; 
-            font-family: inherit; 
-            font-weight: 600; 
-        }
+        .id-badge { font-size: 0.85rem; background: rgba(0,0,0,0.06); padding: 4px 10px; border-radius: 8px; color: #5a738e; display: inline-block; margin: 2px; font-family: inherit; font-weight: 600; }
 
         @media (max-width: 600px) {
             header h1 { font-size: 1.8rem; }
@@ -129,57 +141,26 @@
             .grid-span-2 { grid-column: 1 / -1; }
             .form-section, .list-section { padding: 15px; border-radius: 18px; }
         }
-
         @media (max-width: 768px) {
             table, thead, tbody, th, td, tr { display: block; }
             thead { display: none; }
-            tr { 
-                background: rgba(255, 255, 255, 0.4); border: 1px solid rgba(255,255,255,0.5);
-                border-radius: 15px; padding: 12px; margin-bottom: 12px; 
-            }
-            td { 
-                border: none; padding: 8px 0; display: flex; justify-content: space-between; align-items: flex-start; 
-                border-bottom: 1px dashed rgba(0,0,0,0.05); text-align: right;
-            }
+            tr { background: rgba(255, 255, 255, 0.4); border: 1px solid rgba(255,255,255,0.5); border-radius: 15px; padding: 12px; margin-bottom: 12px; }
+            td { border: none; padding: 8px 0; display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px dashed rgba(0,0,0,0.05); text-align: right; }
             td:last-child { border: none; padding-top: 10px; }
-            
-            td::before { 
-                content: attr(data-label); font-weight: bold; color: #4a637a; font-size: 0.9rem; 
-                padding-right: 15px; text-align: left; min-width: 110px; flex-shrink: 0;
-            }
-            
-            .wrap-text {
-                word-break: break-word;
-                overflow-wrap: break-word;
-                white-space: normal;
-                text-align: right;
-                width: 100%;
-            }
+            td::before { content: attr(data-label); font-weight: bold; color: #4a637a; font-size: 0.9rem; padding-right: 15px; text-align: left; min-width: 110px; flex-shrink: 0; }
+            .wrap-text { word-break: break-word; overflow-wrap: break-word; white-space: normal; text-align: right; width: 100%; }
         }
 
         .status-badge { padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; white-space: nowrap; display: inline-block; }
         .status-waiting { background-color: #ffe3a8; color: #b06a00; }
         .status-running { background-color: #cfe2ff; color: #0a58ca; }
         .status-done { background-color: #d1e7dd; color: #0f5132; }
-
         .action-group { display: flex; gap: 6px; align-items: center; justify-content: flex-end; width: 100%; flex-wrap: wrap; }
         .btn-action { border: none; background: rgba(255,255,255,0.5); cursor: pointer; font-size: 1.05rem; padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; }
         
-        /* ==================== MODAL XEM CHI TIẾT ĐƠN HÀNG ==================== */
-        .info-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);
-            display: flex; justify-content: center; align-items: center; z-index: 10000;
-            opacity: 0; pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
+        .info-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 10000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
         .info-overlay.active { opacity: 1; pointer-events: auto; }
-        .info-card {
-            background: #fff; border-radius: 20px; width: 92%; max-width: 500px;
-            padding: 22px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            position: relative; transform: scale(0.9); transition: transform 0.3s ease;
-            color: var(--text-color);
-        }
+        .info-card { background: #fff; border-radius: 20px; width: 92%; max-width: 500px; padding: 22px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); position: relative; transform: scale(0.9); transition: transform 0.3s ease; color: var(--text-color); }
         .info-overlay.active .info-card { transform: scale(1); }
         .info-header { font-size: 1.25rem; font-weight: bold; margin-bottom: 15px; color: #2c3e50; border-bottom: 2px solid #ecf0f1; padding-bottom: 8px; display: flex; align-items: center; gap: 8px; }
         .info-body p { margin: 10px 0; font-size: 0.95rem; line-height: 1.5; border-bottom: 1px dashed rgba(0,0,0,0.05); padding-bottom: 6px; }
@@ -187,59 +168,31 @@
         .info-quests-title { font-weight: bold; margin-top: 15px; color: #2c3e50; font-size: 0.95rem; display: flex; align-items: center; gap: 5px; }
         .info-quest-row { font-size: 0.9rem; padding: 4px 0; display: flex; align-items: center; gap: 8px; color: #555; }
 
-        /* ==================== SCREEN TREO MÁY CHUẨN LED RGB ==================== */
-        .cinema-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; justify-content: center; align-items: center; z-index: 9999;
-            background-size: 400% 400%;
-            opacity: 0; pointer-events: none;
-            transition: opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-        }
+        .cinema-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 9999; background-size: 400% 400%; opacity: 0; pointer-events: none; transition: opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
         .cinema-overlay.active { opacity: 1; pointer-events: auto; }
         .cinema-overlay.rgb-mode-pause { background-image: linear-gradient(-45deg, #0f172a, #1e1b4b, #2e1065, #172554); animation: rgbMovement 12s ease infinite; }
         .cinema-overlay.rgb-mode-running { background-image: linear-gradient(-45deg, #f43f5e, #ec4899, #8b5cf6, #3b82f6); animation: rgbMovement 6s linear infinite; }
         .cinema-overlay.rgb-mode-done { background-image: linear-gradient(-45deg, #059669, #10b981, #06b6d4, #0284c7); animation: rgbMovement 8s ease infinite; }
-        
         @keyframes rgbMovement { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-
-        .cinema-card {
-            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(25px);
-            padding: 30px 20px; border-radius: 25px; border: 2px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 15px 50px rgba(0,0,0,0.6); width: 92%; max-width: 500px; text-align: center; color: white;
-            position: relative; transform: scale(0.85); transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-        }
+        .cinema-card { background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(25px); padding: 30px 20px; border-radius: 25px; border: 2px solid rgba(255, 255, 255, 0.15); box-shadow: 0 15px 50px rgba(0,0,0,0.6); width: 92%; max-width: 500px; text-align: center; color: white; position: relative; transform: scale(0.85); transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
         .cinema-overlay.active .cinema-card { transform: scale(1); }
-
-        .btn-close-cinema {
-            position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.2);
-            border: none; color: white; font-size: 1.2rem; width: 35px; height: 35px;
-            border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
-        }
+        .btn-close-cinema { position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.2); border: none; color: white; font-size: 1.2rem; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .cinema-status { font-size: 0.85rem; letter-spacing: 3px; text-transform: uppercase; font-weight: 800; text-shadow: 0 0 10px rgba(255,255,255,0.5); margin-bottom: 12px; }
-        
-        .realtime-clock-cinema {
-            font-size: 1.2rem; font-weight: bold; color: #00ffff; letter-spacing: 1px; margin-bottom: 5px;
-            text-shadow: 0 0 8px rgba(0, 255, 255, 0.6); font-family: monospace, sans-serif;
-        }
-
+        .realtime-clock-cinema { font-size: 1.2rem; font-weight: bold; color: #00ffff; letter-spacing: 1px; margin-bottom: 5px; text-shadow: 0 0 8px rgba(0, 255, 255, 0.6); font-family: monospace, sans-serif; }
         .cinema-name { font-size: 2.2rem; margin: 8px 0; font-weight: 800; word-wrap: break-word; }
         .cinema-service { font-size: 1.1rem; color: #00ffff; font-weight: bold; background: rgba(255,255,255,0.1); padding: 6px 18px; border-radius: 50px; display: inline-block; margin-bottom: 18px; border: 1px solid rgba(0,213,255,0.3); }
         .cinema-req { font-style: italic; color: #cbd5e1; font-size: 0.9rem; margin-top: 15px; line-height: 1.4; word-break: break-word; }
-
         .cinema-quests-container { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 16px; padding: 12px 15px; margin: 15px 0; text-align: left; }
         .cinema-quests-header { font-size: 0.85rem; text-transform: uppercase; font-weight: bold; color: #00ffff; margin-bottom: 8px; letter-spacing: 1px; display: flex; align-items: center; gap: 5px; }
         .cinema-quest-item { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 0.95rem; border-bottom: 1px solid rgba(255,255,255,0.05); color: #f1f5f9; }
         .cinema-quest-item:last-child { border: none; }
         .cinema-quest-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: #00ffff; }
         .cinema-quest-text.completed { text-decoration: line-through; color: #94a3b8; font-style: italic; }
-
         .progress-container { width: 100%; background: rgba(0, 0, 0, 0.4); height: 26px; border-radius: 13px; margin: 15px auto; overflow: hidden; position: relative; border: 1px solid rgba(255, 255, 255, 0.2); }
         .progress-bar { width: 100%; background: linear-gradient(90deg, #00f2fe, #4facfe); height: 100%; transition: width 1s linear; }
         .time-display { position: absolute; width: 100%; top: 0; left: 0; line-height: 26px; font-size: 1.1rem; font-weight: bold; text-shadow: 0 0 5px #000; text-align: center; color: white; }
-
         .control-btns { display: flex; justify-content: center; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
         .btn-ctrl { border: none; padding: 10px 18px; font-size: 0.85rem; font-weight: bold; border-radius: 10px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
-        
         .btn-start { background-color: #10b981; color: white; }
         .btn-start:disabled { background-color: #475569; color: #cbd5e1; opacity: 0.2; cursor: not-allowed; }
         .btn-stop { background-color: #f59e0b; color: white; }
@@ -256,6 +209,33 @@
         <p>Hành trình chữa lành và những chuyến bay vạn dặm</p>
         <div class="realtime-clock-main" id="realtimeClockMain">00:00:00</div>
     </header>
+
+    <div class="kpi-section">
+        <div class="kpi-card target">
+            <div class="kpi-value" id="kpiTarget">0/5</div>
+            <div class="kpi-label">🎯 Mục Tiêu KPI</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-value" id="kpiTotal">0</div>
+            <div class="kpi-label">📦 Tổng Đơn</div>
+        </div>
+        <div class="kpi-card waiting">
+            <div class="kpi-value" id="kpiWaiting">0</div>
+            <div class="kpi-label">⏳ Đang Đợi</div>
+        </div>
+        <div class="kpi-card running">
+            <div class="kpi-value" id="kpiRunning">0</div>
+            <div class="kpi-label">🏄‍♂️ Đang Chạy</div>
+        </div>
+        <div class="kpi-card done">
+            <div class="kpi-value" id="kpiDone">0</div>
+            <div class="kpi-label">✅ Đã Xong</div>
+        </div>
+        <div class="kpi-card hearts">
+            <div class="kpi-value" id="kpiHearts">0</div>
+            <div class="kpi-label">💖 Tim Nhận</div>
+        </div>
+    </div>
 
     <div class="form-section">
         <form id="orderForm">
@@ -417,13 +397,36 @@
         return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth()+1).toString().padStart(2, '0')} - ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
     }
 
+    // --- HÀM TÍNH TOÁN KPI ---
+    function updateKPI() {
+        const totalOrders = orders.length;
+        const waitingOrders = orders.filter(o => o.status === 'Đang đợi').length;
+        const runningOrders = orders.filter(o => o.status === 'Đang chạy').length;
+        const doneOrders = orders.filter(o => o.status === 'Đã xong').length;
+        
+        let earnedHearts = 0;
+        orders.forEach(o => {
+            if (o.status === 'Đã xong') {
+                earnedHearts += parseInt(o.totalHearts) || 0;
+            }
+        });
+
+        // 1 đơn hoàn thành tính là 1 KPI, giới hạn hiển thị là / 5
+        document.getElementById('kpiTarget').innerText = `${doneOrders}/5`;
+        document.getElementById('kpiTotal').innerText = totalOrders;
+        document.getElementById('kpiWaiting').innerText = waitingOrders;
+        document.getElementById('kpiRunning').innerText = runningOrders;
+        document.getElementById('kpiDone').innerText = doneOrders;
+        document.getElementById('kpiHearts').innerText = earnedHearts;
+    }
+
     function renderOrders() {
         const tbody = document.getElementById('orderTableBody');
         const emptyMsg = document.getElementById('emptyMessage');
         tbody.innerHTML = '';
 
         const filteredOrders = orders.filter(order => currentFilter === 'all' || order.status === currentFilter);
-        if (filteredOrders.length === 0) { emptyMsg.style.display = 'block'; return; } else { emptyMsg.style.display = 'none'; }
+        if (filteredOrders.length === 0) { emptyMsg.style.display = 'block'; } else { emptyMsg.style.display = 'none'; }
 
         let count = 1;
 
@@ -461,9 +464,10 @@
             `;
             tbody.appendChild(tr);
         });
+
+        updateKPI();
     }
 
-    // HÀM HIỂN THỊ MODAL THÔNG TIN CHI TIẾT ĐƠN HÀNG
     function showOrderInfo(index) {
         const order = orders[index];
         const body = document.getElementById('infoModalBody');
@@ -656,7 +660,7 @@
         }
         
         let reqText = order.requirements ? `“ Yêu cầu: ${order.requirements} ”` : "“ Không có yêu cầu đặc biệt ”";
-        if (order.orderId) reqText = `Mã đơn: ${order.orderId} | ` + reqText;
+        if (order.orderId) reqText = `${order.orderId} | ` + reqText;
         document.getElementById('cinemaRequirements').innerText = reqText;
         
         overlay.classList.add('active');
