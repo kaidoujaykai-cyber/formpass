@@ -79,16 +79,46 @@
         [data-theme="dark"] .kpi-progress-title { color: #94a3b8; }
         .kpi-progress-text { font-size: 1.2rem; color: #e056fd; font-weight: 800; }
 
-        .kpi-progress-track { width: 100%; height: 24px; background: rgba(0, 0, 0, 0.08); border-radius: 12px; position: relative; overflow: hidden; }
+        .kpi-progress-track { 
+    width: 100%; 
+    height: 24px; 
+    background: rgba(0, 0, 0, 0.08); 
+    border-radius: 12px; 
+    position: relative; 
+    overflow: hidden; /* Giữ hiệu ứng ánh sáng luôn nằm gọn bên trong bo góc */
+    -webkit-mask-image: -webkit-radial-gradient(white, black); /* Khắc phục lỗi overflow: hidden bị vô hiệu hóa trên Safari/iOS */
+}
         [data-theme="dark"] .kpi-progress-track { background: rgba(255,255,255,0.1); }
         .kpi-progress-fill { height: 100%; width: 0%; border-radius: 12px; transition: width 0.5s ease, background-color 0.5s ease; position: relative; overflow: hidden; background-color: #e056fd; }
-        .kpi-progress-fill::after {
-            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.4) 50%, transparent 100%);
-            animation: shimmer 4s infinite linear;
-        }
+        /* Làm mịn dải ánh sáng quét qua và dùng chế độ hòa trộn overlay để giữ nguyên màu tím/xanh của thanh */
+.kpi-progress-fill::after {
+    content: ""; 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    width: 200%; /* Tăng gấp đôi để dải sáng chạy mượt không bị khựng */
+    height: 100%;
+    background: linear-gradient(
+        90deg, 
+        transparent 0%, 
+        rgba(255, 255, 255, 0.35) 30%, 
+        rgba(255, 255, 255, 0.6) 50%, 
+        rgba(255, 255, 255, 0.35) 70%, 
+        transparent 100%
+    );
+    mix-blend-mode: overlay; /* Giúp dải sáng hòa trộn óng ánh vào màu nền dưới, không bị bạc màu */
+    animation: kpiShimmer 2.5s infinite linear;
+}
 
-        @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+/* Sửa lại cách dịch chuyển animation theo tỷ lệ phần trăm thay vì dùng translateX trục dọc dễ lỗi trên mobile */
+@keyframes kpiShimmer {
+    0% {
+        transform: translate3d(-100%, 0, 0);
+    }
+    100% {
+        transform: translate3d(50%, 0, 0);
+    }
+}
 
         /* ==================== 6 KPI CARDS SECTION ==================== */
         .kpi-section { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; width: 100%; margin-bottom: 20px; }
@@ -230,15 +260,35 @@
             .search-input { width: 100%; }
         }
         @media (max-width: 768px) {
-            table, thead, tbody, th, td, tr { display: block; }
-            thead { display: none; }
-            tr { background: rgba(255, 255, 255, 0.4); border: 1px solid var(--border-color); border-radius: 15px; padding: 12px; margin-bottom: 12px; }
-            [data-theme="dark"] tr { background: rgba(0,0,0,0.15); }
-            td { border: none; padding: 8px 0; display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px dashed rgba(0,0,0,0.05); text-align: right; }
-            td:last-child { border: none; padding-top: 10px; }
-            td::before { content: attr(data-label); font-weight: bold; font-size: 0.9rem; padding-right: 15px; text-align: left; min-width: 110px; flex-shrink: 0; }
-            .wrap-text { word-break: break-word; overflow-wrap: break-word; white-space: normal; text-align: right; width: 100%; }
-        }
+    table, thead, tbody, th, td, tr { display: block; }
+    thead { display: none; }
+    tr { 
+        background: var(--panel-bg); 
+        border: 1px solid var(--border-color); 
+        border-radius: 15px; 
+        padding: 12px; 
+        margin-bottom: 12px; 
+    }
+    td { 
+        border: none; 
+        padding: 10px 0; 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; /* Căn giữa theo chiều dọc */
+        border-bottom: 1px dashed rgba(0,0,0,0.05); 
+    }
+    td:last-child { border: none; padding-top: 12px; flex-direction: column; align-items: flex-start; gap: 8px; }
+    td::before { 
+        content: attr(data-label); 
+        font-weight: bold; 
+        font-size: 0.9rem; 
+        text-align: left; 
+        min-width: 90px; 
+        flex-shrink: 0; 
+    }
+    .wrap-text { word-break: break-word; overflow-wrap: break-word; white-space: normal; text-align: right; max-width: 60% }
+    .action-group { justify-content: flex-start; gap: 8px; width: 100%; }
+}
 
         .status-badge { padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; white-space: nowrap; display: inline-block; }
         .status-waiting { background-color: #ffe3a8; color: #b06a00; }
